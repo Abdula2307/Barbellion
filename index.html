@@ -36,41 +36,6 @@
 
   a { text-decoration: none; color: inherit; }
 
-  /* TOP APK BANNER */
-  .apk-top-banner {
-    background: linear-gradient(90deg, rgba(198,255,26,0.15) 0%, rgba(20,20,20,1) 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 6%;
-    font-size: 13px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .apk-top-banner p {
-    color: var(--gray-light);
-  }
-
-  .apk-top-banner strong {
-    color: var(--lime);
-  }
-
-  .apk-top-btn {
-    background-color: var(--lime);
-    color: var(--bg);
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 800;
-    white-space: nowrap;
-    transition: transform 0.15s ease;
-  }
-
-  .apk-top-btn:hover {
-    transform: scale(1.03);
-  }
-
   /* NAV */
   nav {
     display: flex;
@@ -131,7 +96,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 80px 6% 60px;
+    padding: 90px 6% 60px;
     position: relative;
     overflow: hidden;
   }
@@ -201,6 +166,8 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
+    border: none;
+    cursor: pointer;
     flex: 1 1 200px;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
@@ -343,7 +310,7 @@
     font-size: 13px;
   }
 
-  /* INSTALL & DOWNLOAD SECTION */
+  /* INSTALL SECTION */
   .download-section {
     padding: 80px 6%;
     text-align: center;
@@ -436,13 +403,6 @@
 
   .btn-secondary-link:hover { border-color: var(--lime); color: var(--lime); }
 
-  .platform-note {
-    margin-top: 16px;
-    font-size: 12px;
-    color: var(--gray);
-    line-height: 1.5;
-  }
-
   /* FOOTER */
   footer {
     padding: 40px 6%;
@@ -473,17 +433,10 @@
   @media (max-width: 640px) {
     .nav-links { display: none; }
     .nav-login { display: none; }
-    .apk-top-banner p { font-size: 12px; }
   }
 </style>
 </head>
 <body>
-
-  <!-- TOP APK DOWNLOAD BANNER -->
-  <div class="apk-top-banner">
-    <p><strong>Prefer the native Android App?</strong> Get the APK directly[cite: 6].</p>
-    <a href="Barbellion.apk" download class="apk-top-btn">⬇ Download APK</a>
-  </div>
 
   <nav>
     <div class="logo">BARBELLION</div>
@@ -499,7 +452,7 @@
   </nav>
 
   <section class="hero">
-    <div class="hero-tag">● NOW AVAILABLE AS WEB & HOME SCREEN APP</div>
+    <div class="hero-tag">● PROGRESSIVE WEB APP</div>
     <h1>Calisthenics, <span>engineered</span> like a workout plan should be[cite: 6].</h1>
     <p>Hypertrophy days, a real skill progression tree, and an AI nutrition coach that talks like a person — not a spreadsheet[cite: 6].</p>
 
@@ -509,7 +462,7 @@
       </button>
       <a href="auth.html" class="btn-secondary">Open Web Version</a>
     </div>
-    <div class="hero-note">Free · No card required · Installable on iOS, Android & PC[cite: 6]</div>
+    <div class="hero-note">Free · No app store required · Instant Install[cite: 6]</div>
   </section>
 
   <section class="features" id="features">
@@ -577,7 +530,7 @@
     <div class="download-card">
       <div class="download-icon">🏋️</div>
       <h3>Barbellion App</h3>
-      <div class="version">Add directly to your mobile or desktop screen</div>
+      <div class="version">Install directly onto your Home Screen</div>
 
       <button id="cardInstallBtn" class="btn-install">
         📲 Add to Home Screen
@@ -586,22 +539,14 @@
       <div class="download-meta">
         <span>✔ Fast</span>
         <span>✔ Offline capable</span>
-        <span>✔ No Store needed</span>
+        <span>✔ Native feel</span>
       </div>
 
-      <div class="or-divider">OR USE WEB / APK</div>
+      <div class="or-divider">OR</div>
 
-      <a href="auth.html" class="btn-secondary-link" style="margin-bottom: 12px;">
-        Use in Browser
+      <a href="auth.html" class="btn-secondary-link">
+        Open in Browser Directly
       </a>
-
-      <a href="Barbellion.apk" download class="btn-secondary-link">
-        ⬇ Download Android APK Direct
-      </a>
-
-      <div class="platform-note">
-        <strong>iOS Users:</strong> Tap the Share button in Safari and choose <strong>"Add to Home Screen"</strong>[cite: 6].
-      </div>
     </div>
   </section>
 
@@ -616,7 +561,6 @@
   </footer>
 
   <script>
-    // Register Service Worker for PWA compliance
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
@@ -629,20 +573,26 @@
       e.preventDefault();
       deferredPrompt = e;
       
-      // Highlight install buttons when prompt is available
       heroBtn.style.boxShadow = '0 0 16px rgba(198,255,26,0.5)';
       cardBtn.style.boxShadow = '0 0 16px rgba(198,255,26,0.5)';
     });
 
     async function triggerInstall() {
       if (deferredPrompt) {
+        // Native Chrome/Android prompt launch
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === 'accepted') {
           deferredPrompt = null;
         }
       } else {
-        alert('To add to Home Screen:\n• iPhone/iPad: Tap Share in Safari -> "Add to Home Screen"\n• Android/Chrome: Tap 3 dots menu -> "Install App" or "Add to Home screen"');
+        // Direct browser fallback check for iOS/Safari
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+          alert('Tap the Share button in Safari, then tap "Add to Home Screen".');
+        } else {
+          alert('Tap your browser options menu (⋮), then select "Install app" or "Add to Home Screen".');
+        }
       }
     }
 
@@ -650,4 +600,4 @@
     cardBtn.addEventListener('click', triggerInstall);
   </script>
 </body>
- </html>
+         </html>
