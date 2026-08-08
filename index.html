@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barbellion — Calisthenics, Redefined</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0a;
+    --card: #141414;
+    --border: #242424;
+    --lime: #c6ff1a;
+    --gray: #888;
+    --gray-light: #ccc;
+    --white: #ffffff;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--white);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  a { text-decoration: none; color: inherit; }
+
+  /* NAV */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 6%;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background-color: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+  }
+
+  .logo {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-light);
+  }
+
+  .nav-links a:hover { color: var(--lime); }
+
+  .nav-auth {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .nav-login {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-light);
+  }
+
+  .nav-login:hover { color: var(--white); }
+
+  .nav-btn {
+    background-color: var(--lime);
+    color: var(--bg);
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+
+  /* HERO */
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 100px 6% 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(198,255,26,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    color: var(--lime);
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+  }
+
+  .hero h1 {
+    font-size: 56px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    max-width: 780px;
+    margin-bottom: 24px;
+  }
+
+  .hero h1 span { color: var(--lime); }
+
+  .hero p {
+    font-size: 18px;
+    color: var(--gray-light);
+    max-width: 560px;
+    margin-bottom: 40px;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .btn-primary {
+    background-color: var(--lime);
+    color: var(--bg);
+    padding: 16px 36px;
+    border-radius: 10px;
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 0 0 rgba(198,255,26,0);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(198,255,26,0.25);
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--white);
+    border: 1px solid var(--border);
+    padding: 16px 36px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .btn-secondary:hover { border-color: var(--lime); color: var(--lime); }
+
+  .hero-note {
+    font-size: 12px;
+    color: var(--gray);
+  }
+
+  /* FEATURES */
+  .features {
+    padding: 80px 6%;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    text-align: center;
+    font-size: 34px;
+    font-weight: 900;
+    margin-bottom: 12px;
+  }
+
+  .section-subtitle {
+    text-align: center;
+    color: var(--gray);
+    font-size: 15px;
+    margin-bottom: 56px;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+
+  .feature-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 24px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .feature-card:hover {
+    border-color: var(--lime);
+    transform: translateY(-4px);
+  }
+
+  .feature-icon {
+    width: 48px;
+    height: 48px;
+    background-color: rgba(198,255,26,0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  .feature-card h3 {
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+
+  .feature-card p {
+    color: var(--gray-light);
+    font-size: 14px;
+  }
+
+  /* HOW IT WORKS */
+  .how {
+    padding: 80px 6%;
+    background-color: var(--card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .how-inner {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 32px;
+    margin-top: 56px;
+  }
+
+  .step {
+    text-align: center;
+  }
+
+  .step-number {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: var(--lime);
+    color: var(--bg);
+    font-weight: 900;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+  }
+
+  .step h4 {
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .step p {
+    color: var(--gray);
+    font-size: 13px;
+  }
+
+  /* DOWNLOAD CTA */
+  .download-section {
+    padding: 100px 6%;
+    text-align: center;
+  }
+
+  .download-section h2 {
+    font-size: 38px;
+    font-weight: 900;
+    margin-bottom: 16px;
+  }
+
+  .download-section p {
+    color: var(--gray-light);
+    font-size: 16px;
+    max-width: 500px;
+    margin: 0 auto 40px;
+  }
+
+  .download-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .download-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+  }
+
+  .download-card h3 {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .download-card .version {
+    color: var(--gray);
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+
+  .btn-download {
+    background-color: var(--lime);
+    color: var(--bg);
+    padding: 18px 0;
+    width: 100%;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.15s ease;
+  }
+
+  .btn-download:hover { transform: translateY(-2px); }
+
+  .download-meta {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 24px;
+    font-size: 12px;
+    color: var(--gray);
+  }
+
+  .download-meta span { display: flex; align-items: center; gap: 6px; }
+
+  .platform-note {
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--gray);
+  }
+
+  .or-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 32px 0;
+    color: var(--gray);
+    font-size: 12px;
+  }
+
+  .or-divider::before,
+  .or-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: var(--border);
+  }
+
+  .btn-web {
+    background-color: transparent;
+    border: 1px solid var(--border);
+    color: var(--white);
+    padding: 16px 0;
+    width: 100%;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 14px;
+    display: block;
+  }
+
+  .btn-web:hover { border-color: var(--lime); color: var(--lime); }
+
+  /* FOOTER */
+  footer {
+    padding: 40px 6%;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  footer .logo { font-size: 16px; }
+
+  footer p {
+    color: var(--gray);
+    font-size: 12px;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    font-size: 12px;
+    color: var(--gray);
+  }
+
+  .footer-links a:hover { color: var(--lime); }
+
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 36px; }
+    .nav-links { display: none; }
+    .download-card { padding: 32px 24px; }
+    .nav-login { display: none; }
+  }
+</style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">BARBELLION</div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How It Works</a>
+      <a href="#download">Download</a>
+    </div>
+    <div class="nav-auth">
+      <a href="auth.html" class="nav-login">Log In</a>
+      <a href="auth.html" class="nav-btn">Sign Up</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-tag">● NOW AVAILABLE FOR ANDROID & WEB</div>
+    <h1>Calisthenics, <span>engineered</span> like a workout plan should be.</h1>
+    <p>Hypertrophy days, a real skill progression tree, and an AI nutrition coach that talks like a person — not a spreadsheet.</p>
+    <div class="hero-buttons">
+      <a href="auth.html" class="btn-primary">Get Started Free</a>
+      <a href="#features" class="btn-secondary">See Features</a>
+    </div>
+    <div class="hero-note">Free · No card required · Works on any device</div>
+  </section>
+
+  <section class="features" id="features">
+    <h2 class="section-title">Built different</h2>
+    <p class="section-subtitle">Every part of the app is designed around actually training, not just logging.</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">💪</div>
+        <h3>Day 1: Hypertrophy</h3>
+        <p>A real straight-through volume session — pull-ups, push-ups, supersets, and a 2-minute rest timer that keeps you moving between sets.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌳</div>
+        <h3>Day 2: Skill Tree</h3>
+        <p>From your first L-sit to a full front lever — mastered moves automatically become your warmup as you progress through the tree.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>AI Nutrition Chat</h3>
+        <p>Tell it what you ate in plain English. It logs the calories, tracks your water, and actually talks back like a coach would.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <h3>Auto Scheduling</h3>
+        <p>The app knows what day it is and what you should be training — no manual planning, no guesswork.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚖️</div>
+        <h3>Weekly Check-Ins</h3>
+        <p>A quick weight check every 7 days keeps your calorie and water targets accurate as you progress.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔥</div>
+        <h3>Built for Consistency</h3>
+        <p>Progress bars, rest timers, and gatekeeper check-ins keep every session honest and on track.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="how" id="how">
+    <div class="how-inner">
+      <h2 class="section-title">How it works</h2>
+      <p class="section-subtitle">From sign up to your first session in under two minutes.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h4>Create your account</h4>
+          <p>Just a username, password, and your country — takes 30 seconds.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h4>Set up your profile</h4>
+          <p>Enter your weight and height so your targets are accurate.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h4>Train today's session</h4>
+          <p>The app already knows whether it's a hypertrophy day or a skill day.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="download-section" id="download">
+    <h2>Ready to train?</h2>
+    <p>Sign up and get your first session started today — no download required.</p>
+
+    <div class="download-card">
+      <div class="download-icon">🏋️</div>
+      <h3>Barbellion</h3>
+      <div class="version">Free · No card required</div>
+
+      <a href="auth.html" class="btn-download">
+        Sign Up Free
+      </a>
+
+      <div class="download-meta">
+        <span>✔ Free</span>
+        <span>✔ No ads</span>
+        <span>✔ Any device</span>
+      </div>
+
+      <div class="or-divider">OR</div>
+
+      <a href="Barbellion.apk" download class="btn-web">
+        ⬇ Download Android APK
+      </a>
+
+      <div class="platform-note">
+        iOS support is not currently available.
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="logo">BARBELLION</div>
+    <p>© 2026 Barbellion. Train with intent.</p>
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#how">How It Works</a>
+      <a href="auth.html">Log In</a>
+    </div>
+  </footer>
+
+</body>
+        </html>
