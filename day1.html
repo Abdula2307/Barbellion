@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barbellion — Day 1 Workout</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#fff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:50px 20px; }
+  .title { font-size:26px; font-weight:900; text-align:center; margin-bottom:6px; }
+  .subtitle { color:#999; font-size:13px; text-align:center; margin-bottom:16px; }
+  .progress-row { display:flex; gap:5px; width:100%; max-width:500px; margin-bottom:24px; }
+  .segment { flex:1; height:6px; border-radius:3px; background:#2a2a2a; }
+  .segment.done { background:#c6ff1a; }
+  .center-box { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; max-width:500px; }
+  .set-title { font-size:24px; font-weight:800; text-align:center; margin-bottom:20px; }
+  .instructions { color:#ccc; font-size:16px; text-align:center; line-height:24px; margin-bottom:34px; padding:0 8px; }
+  .btn { background:#c6ff1a; color:#0a0a0a; border:none; border-radius:10px; padding:16px 40px; font-weight:700; font-size:16px; cursor:pointer; }
+  .rest-label { color:#c6ff1a; font-size:15px; font-weight:800; letter-spacing:3px; margin-bottom:10px; }
+  .rest-timer { font-size:60px; font-weight:900; margin-bottom:18px; }
+  .rest-hint { color:#666; font-size:12px; }
+</style>
+</head>
+<body>
+  <div class="title">DAY 1 WORKOUT</div>
+  <div class="subtitle" id="subtitle"></div>
+  <div class="progress-row" id="progressRow"></div>
+  <div class="center-box" id="centerBox"></div>
+
+  <script>
+    const API_BASE = 'https://YOUR-VERCEL-URL.vercel.app/api';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'auth.html';
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+
+    const RAW_SETS = [
+      { label: 'Pull-Up Challenge', instructions: 'Do as many reps as possible until you hit 50 total. If fatigued, DO NOT drop to the floor — hang, rest 10-20s, resume.' },
+      { label: 'Push-Ups', instructions: 'Push-ups to absolute failure. Set 1 of 2.' },
+      { label: 'Push-Ups', instructions: 'Push-ups to absolute failure. Set 2 of 2.' },
+      { label: 'Arm Superset', instructions: '30 Hammer Curls straight into 30 Skull Crushers, repeated 3 times. No rest between movements.' },
+      { label: 'Leg Circuit', instructions: 'Lunges → Squats → Calf Raises → Single-Leg Calf Raises, straight through. Set 1 of 2.' },
+      { label: 'Leg Circuit', instructions: 'Lunges → Squats → Calf Raises → Single-Leg Calf Raises, straight through. Set 2 of 2.' },
+      { label: 'Forearm Finisher', instructions: 'Wrist Extensions → Flexions → Rotations, straight through. Set 1 of 2.' },
+      { label: 'Forearm Finisher', instructions: 'Wrist Extensions → Flexions → Rotations, straight through. Set 2 of 2.' },
+      { label: 'Ab Superset', instructions: 'Hanging Leg Raises → Bicycle Crunches → Plank Hold → Russian Twists. Set 1 of 2.' },
+      { label: 'Ab Superset', instructions: 'Hanging Leg Raises → Bicycle Crunches → Plank Hold → Russian Twists. Set 2 of 2.' },
+    ];
+
+    const SLIDES = [];
+    RAW_SETS.forEach((set, i) => {
+      SLIDES.push({ type: 'set', ...set, setPos: i + 1, total: RAW_SETS.length });
+      if (i !== RAW_SETS.length - 1) SLIDES.push({ type: 'rest', seconds: 120, setPos: i + 1, total: RAW_SETS.length });
+      else SLIDES[SLIDES.length - 1].isLast = true;
+    });
+
+    let index = 0;
+    let restInterval = null;
+
+    function renderProgress() {
+      const row = document.getElementById('progressRow');
+      row.innerHTML = '';
+      for (let i = 0; i < RAW_SETS.length; i++) {
+        const seg = document.createElement('div');
+        seg.className = 'segment' + (i < SLIDES[index].setPos ? ' done' : '');
+        row.appendChild(seg);
+      }
+    }
+
+    function render() {
+      const slide = SLIDES[index];
+      renderProgress();
+      document.getElementById('subtitle').textContent = slide.type === 'rest' ? `RESTING (${slide.label})` : `SET ${slide.setPos}/${slide.total} (${slide.label})`;
+      const box = document.getElementById('centerBox');
+
+      if (slide.type === 'rest') {
+        let timeLeft = slide.seconds;
+        box.innerHTML = `<div class="rest-label">REST</div><div class="rest-timer" id="timer">2:00</div><div class="rest-hint">Auto-advancing when timer hits 0</div>`;
+        if (restInterval) clearInterval(restInterval);
+        restInterval = setInterval(() => {
+          timeLeft--;
+          const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+          document.getElementById('timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+          if (timeLeft <= 0) { clearInterval(restInterval); advance(); }
+        }, 1000);
+      } else {
+        box.innerHTML = `
+          <div class="set-title">${slide.label}</div>
+          <div class="instructions">${slide.instructions}</div>
+          <button class="btn" onclick="advance()">${slide.isLast ? 'Complete Workout' : 'Done'}</button>
+        `;
+      }
+    }
+
+    async function advance() {
+      if (index + 1 >= SLIDES.length) {
+        await fetch(`${API_BASE}/day1`, { method: 'POST', headers });
+        window.location.href = 'dashboard.html';
+        return;
+      }
+      index++;
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>
