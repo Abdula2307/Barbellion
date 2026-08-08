@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barbellion — Sign In</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#fff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .card { width:100%; max-width:420px; }
+  .brand { font-size:34px; font-weight:900; text-align:center; letter-spacing:1px; margin-bottom:40px; }
+  .toggle { display:flex; background:#161616; border-radius:30px; padding:4px; margin-bottom:28px; }
+  .toggle button { flex:1; padding:12px; border:none; background:transparent; color:#888; font-weight:700; font-size:14px; border-radius:26px; cursor:pointer; }
+  .toggle button.active { background:#fff; color:#0a0a0a; }
+  label { display:block; color:#999; font-size:12px; font-weight:700; margin:16px 0 8px; letter-spacing:0.5px; }
+  input, select { width:100%; padding:14px; background:#161616; border:1px solid #2a2a2a; border-radius:10px; color:#fff; font-size:15px; }
+  input:focus, select:focus { outline:none; border-color:#c6ff1a; }
+  .submit { width:100%; background:#c6ff1a; color:#0a0a0a; border:none; padding:17px; border-radius:10px; font-weight:900; font-size:14px; letter-spacing:0.5px; margin-top:28px; cursor:pointer; }
+  .submit:disabled { opacity:0.6; }
+  .error { color:#ff6b6b; font-size:13px; margin-top:12px; text-align:center; display:none; }
+  #countryField { display:none; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">BARBELLION</div>
+    <div class="toggle">
+      <button id="signupBtn" class="active" onclick="switchMode(true)">Sign Up</button>
+      <button id="loginBtn" onclick="switchMode(false)">Log In</button>
+    </div>
+
+    <label>Username</label>
+    <input type="text" id="username" placeholder="Username" autocomplete="username">
+
+    <label>Password</label>
+    <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+
+    <div id="countryField">
+      <label>Country</label>
+      <select id="country">
+        <option>United States</option><option>Pakistan</option><option>India</option>
+        <option>United Kingdom</option><option>Canada</option><option>Australia</option>
+        <option>UAE</option><option>Saudi Arabia</option><option>Germany</option><option>France</option>
+      </select>
+    </div>
+
+    <button class="submit" id="submitBtn" onclick="handleSubmit()">Create Account</button>
+    <div class="error" id="errorMsg"></div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://YOUR-VERCEL-URL.vercel.app/api';
+    let isSignUp = true;
+
+    function switchMode(signUp) {
+      isSignUp = signUp;
+      document.getElementById('signupBtn').classList.toggle('active', signUp);
+      document.getElementById('loginBtn').classList.toggle('active', !signUp);
+      document.getElementById('countryField').style.display = signUp ? 'block' : 'none';
+      document.getElementById('submitBtn').textContent = signUp ? 'Create Account' : 'Log In';
+      document.getElementById('errorMsg').style.display = 'none';
+    }
+
+    async function handleSubmit() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const country = document.getElementById('country').value;
+      const errorEl = document.getElementById('errorMsg');
+      const btn = document.getElementById('submitBtn');
+      errorEl.style.display = 'none';
+
+      if (!username || !password) {
+        errorEl.textContent = 'Enter username and password.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      if (isSignUp) {
+        const hasLetter = /[a-zA-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        if (password.length < 8 || !hasLetter || !hasNumber) {
+          errorEl.textContent = 'Password must be 8+ characters with letters and numbers.';
+          errorEl.style.display = 'block';
+          return;
+        }
+      }
+
+      btn.disabled = true;
+      btn.textContent = '...';
+
+      try {
+        const action = isSignUp ? 'signup' : 'login';
+        const body = isSignUp ? { username, password, country } : { username, password };
+        const res = await fetch(`${API_BASE}/auth?action=${action}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorEl.textContent = data.message || 'Something went wrong.';
+          errorEl.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = isSignUp ? 'Create Account' : 'Log In';
+          return;
+        }
+
+        localStorage.setItem('token', data.token);
+        window.location.href = data.isNewUser ? 'onboarding.html' : 'dashboard.html';
+      } catch (err) {
+        errorEl.textContent = 'Network error. Try again.';
+        errorEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = isSignUp ? 'Create Account' : 'Log In';
+      }
+    }
+  </script>
+</body>
+</html>
