@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barbellion — Dashboard</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#fff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
+  .brand { font-size:26px; font-weight:900; text-align:center; letter-spacing:1px; padding:24px 0 12px; }
+  .section-title { font-size:14px; font-weight:800; text-align:center; letter-spacing:0.5px; margin:20px 0 14px; color:#fff; }
+  .rings { display:flex; justify-content:space-evenly; padding:10px 16px; }
+  .ring-block { text-align:center; }
+  .ring-label { display:flex; align-items:center; justify-content:center; gap:4px; font-size:11px; font-weight:700; color:#ccc; margin-bottom:8px; }
+  svg { display:block; }
+  .ring-value { font-size:22px; font-weight:900; }
+  .ring-unit { font-size:10px; color:#888; }
+  .workout-section { padding:0 20px; text-align:center; }
+  .workout-btn { background:#c6ff1a; color:#0a0a0a; border:none; border-radius:12px; padding:16px 24px; width:100%; font-weight:900; font-size:14px; letter-spacing:0.5px; cursor:pointer; }
+  .workout-subtext { color:#888; font-size:12px; margin-top:10px; }
+  .rest-text { color:#888; font-size:14px; text-align:center; }
+  .chat-container { padding:16px; max-width:600px; margin:0 auto; }
+  .chat-list { min-height:200px; max-height:400px; overflow-y:auto; padding-bottom:16px; }
+  .chat-row { display:flex; gap:6px; padding:6px 0; }
+  .chat-label { color:#c6ff1a; font-weight:800; font-size:14px; }
+  .chat-text { color:#ddd; font-size:14px; }
+  .input-row { display:flex; gap:8px; padding:12px; border-top:1px solid #1a1a1a; position:sticky; bottom:0; background:#0a0a0a; }
+  .input-row input { flex:1; background:#161616; color:#fff; border-radius:24px; padding:12px 16px; font-size:14px; border:1px solid #2a2a2a; }
+  .send-btn { width:40px; height:40px; border-radius:20px; background:#161616; border:1px solid #2a2a2a; color:#c6ff1a; font-weight:800; cursor:pointer; }
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); align-items:center; justify-content:center; padding:24px; z-index:100; }
+  .modal-overlay.show { display:flex; }
+  .modal-card { background:#111; border-radius:16px; padding:24px; width:100%; max-width:420px; }
+  .modal-title { font-size:20px; font-weight:800; margin-bottom:8px; }
+  .modal-subtitle { color:#aaa; font-size:13px; margin-bottom:20px; }
+  .modal-card input { width:100%; background:#161616; color:#fff; border-radius:10px; padding:12px; margin-bottom:12px; border:1px solid #2a2a2a; }
+  .modal-btn { background:#c6ff1a; color:#0a0a0a; border:none; border-radius:10px; padding:14px; width:100%; font-weight:700; cursor:pointer; }
+</style>
+</head>
+<body>
+  <div class="brand">BARBELLION</div>
+  <div class="section-title">YOUR PROGRESS</div>
+
+  <div class="rings">
+    <div class="ring-block">
+      <div class="ring-label">🔥 CALORIES</div>
+      <svg width="130" height="130">
+        <circle cx="65" cy="65" r="55" stroke="#1a1a1a" stroke-width="10" fill="none"/>
+        <circle id="calRing" cx="65" cy="65" r="55" stroke="#c6ff1a" stroke-width="10" fill="none" stroke-dasharray="345" stroke-dashoffset="345" stroke-linecap="round" transform="rotate(-90 65 65)"/>
+        <text x="65" y="62" fill="#fff" font-size="22" font-weight="900" text-anchor="middle" id="calValue">0</text>
+        <text x="65" y="80" fill="#888" font-size="9" text-anchor="middle" id="calUnit">/ 0 kcal</text>
+      </svg>
+    </div>
+    <div class="ring-block">
+      <div class="ring-label">💧 WATER</div>
+      <svg width="130" height="130">
+        <circle cx="65" cy="65" r="55" stroke="#1a1a1a" stroke-width="10" fill="none"/>
+        <circle id="waterRing" cx="65" cy="65" r="55" stroke="#3ac1ff" stroke-width="10" fill="none" stroke-dasharray="345" stroke-dashoffset="345" stroke-linecap="round" transform="rotate(-90 65 65)"/>
+        <text x="65" y="62" fill="#fff" font-size="22" font-weight="900" text-anchor="middle" id="waterValue">0</text>
+        <text x="65" y="80" fill="#888" font-size="9" text-anchor="middle" id="waterUnit">/ 0 L</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="workout-section" id="workoutSection"></div>
+
+  <div class="section-title">AI NUTRITION CHAT</div>
+  <div class="chat-container">
+    <div class="chat-list" id="chatList">
+      <div class="chat-row"><span class="chat-label">AI:</span><span class="chat-text">Hey! Tell me what you ate or drank and I'll log it for you.</span></div>
+    </div>
+  </div>
+  <div class="input-row">
+    <input type="text" id="chatInput" placeholder="Ask AI about your food..." onkeypress="if(event.key==='Enter')sendMessage()">
+    <button class="send-btn" onclick="sendMessage()">➤</button>
+  </div>
+
+  <div class="modal-overlay" id="weightModal">
+    <div class="modal-card">
+      <div class="modal-title">Weekly Check-In</div>
+      <div class="modal-subtitle">Update your weight so your targets stay accurate.</div>
+      <input type="number" id="checkWeight" placeholder="Current weight (kg)">
+      <input type="number" id="checkHeight" placeholder="Height (cm) — optional">
+      <button class="modal-btn" onclick="submitWeightCheck()">Save</button>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://YOUR-VERCEL-URL.vercel.app/api';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'auth.html';
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+    const CIRC = 345;
+
+    async function fetchStatus() {
+      const res = await fetch(`${API_BASE}/nutrition?action=status`, { headers });
+      const data = await res.json();
+      document.getElementById('calValue').textContent = data.caloriesLeft;
+      document.getElementById('calUnit').textContent = `/ ${data.calorieTarget} kcal`;
+      document.getElementById('waterValue').textContent = (data.waterTarget - data.waterLeft) / 1000 + 'L';
+      document.getElementById('waterUnit').textContent = `/ ${(data.waterTarget/1000).toFixed(1)} L`;
+      const eaten = data.calorieTarget - data.caloriesLeft;
+      const calPct = data.calorieTarget > 0 ? Math.min(eaten / data.calorieTarget, 1) : 0;
+      const waterDrank = data.waterTarget - data.waterLeft;
+      const waterPct = data.waterTarget > 0 ? Math.min(waterDrank / data.waterTarget, 1) : 0;
+      document.getElementById('calRing').style.strokeDashoffset = CIRC * (1 - calPct);
+      document.getElementById('waterRing').style.strokeDashoffset = CIRC * (1 - waterPct);
+    }
+
+    async function fetchTodayWorkout() {
+      const res = await fetch(`${API_BASE}/user?action=today-workout`, { headers });
+      const data = await res.json();
+      const section = document.getElementById('workoutSection');
+      if (data.day === 'rest') {
+        section.innerHTML = '<div class="rest-text">Rest Day — recover up 💤</div>';
+      } else if (data.completedToday) {
+        section.innerHTML = '<div class="rest-text">Today\'s workout is done. Come back tomorrow 💪</div>';
+      } else {
+        section.innerHTML = `<button class="workout-btn" onclick="window.location.href='${data.day}.html'">START ${data.label.toUpperCase()}</button>`;
+      }
+    }
+
+    async function fetchWeightCheckStatus() {
+      const res = await fetch(`${API_BASE}/user?action=weight-check-status`, { headers });
+      const data = await res.json();
+      if (data.due) document.getElementById('weightModal').classList.add('show');
+    }
+
+    async function submitWeightCheck() {
+      const weight = parseInt(document.getElementById('checkWeight').value, 10);
+      const height = document.getElementById('checkHeight').value ? parseInt(document.getElementById('checkHeight').value, 10) : undefined;
+      if (!weight) { alert('Enter your current weight.'); return; }
+      await fetch(`${API_BASE}/user?action=weight-check`, { method: 'POST', headers, body: JSON.stringify({ weight, height }) });
+      document.getElementById('weightModal').classList.remove('show');
+      fetchStatus();
+    }
+
+    function addChatMessage(text, isUser) {
+      const list = document.getElementById('chatList');
+      const row = document.createElement('div');
+      row.className = 'chat-row';
+      row.innerHTML = `<span class="chat-label">${isUser ? 'Me' : 'AI'}:</span><span class="chat-text">${text}</span>`;
+      list.appendChild(row);
+      list.scrollTop = list.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+      addChatMessage(text, true);
+      input.value = '';
+
+      try {
+        const res = await fetch(`${API_BASE}/nutrition?action=log`, { method: 'POST', headers, body: JSON.stringify({ text }) });
+        const data = await res.json();
+        addChatMessage(data.reply, false);
+        fetchStatus();
+      } catch {
+        addChatMessage("Couldn't log that, try rephrasing.", false);
+      }
+    }
+
+    fetchStatus();
+    fetchTodayWorkout();
+    fetchWeightCheckStatus();
+  </script>
+</body>
+  </html>
