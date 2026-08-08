@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barbellion — Day 2 Skills</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#fff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:50px 20px; }
+  .title { font-size:26px; font-weight:900; text-align:center; margin-bottom:6px; }
+  .subtitle { color:#999; font-size:13px; text-align:center; margin-bottom:16px; }
+  .progress-row { display:flex; gap:5px; width:100%; max-width:500px; margin-bottom:24px; }
+  .segment { flex:1; height:6px; border-radius:3px; background:#2a2a2a; }
+  .segment.done { background:#c6ff1a; }
+  .center-box { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; max-width:500px; }
+  .tag { color:#c6ff1a; font-size:14px; font-weight:800; letter-spacing:2px; margin-bottom:16px; }
+  .set-title { font-size:24px; font-weight:800; text-align:center; margin-bottom:16px; }
+  .instructions { color:#ccc; font-size:14px; text-align:center; line-height:20px; margin-bottom:30px; padding:0 8px; }
+  .btn { background:#c6ff1a; color:#0a0a0a; border:none; border-radius:10px; padding:16px 40px; font-weight:700; font-size:16px; cursor:pointer; }
+  .rest-label { color:#c6ff1a; font-size:15px; font-weight:800; letter-spacing:3px; margin-bottom:10px; }
+  .rest-timer { font-size:60px; font-weight:900; margin-bottom:18px; }
+  .rest-hint { color:#666; font-size:12px; }
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); align-items:center; justify-content:center; padding:24px; z-index:100; }
+  .modal-overlay.show { display:flex; }
+  .modal-card { background:#141414; border:1px solid #242424; border-radius:18px; padding:26px; width:100%; max-width:420px; text-align:center; }
+  .modal-header { font-size:18px; font-weight:900; letter-spacing:0.5px; margin-bottom:18px; }
+  .modal-question { color:#ccc; font-size:16px; font-weight:700; text-transform:uppercase; margin-bottom:26px; line-height:22px; }
+  .modal-btns { display:flex; gap:12px; }
+  .modal-btn { flex:1; padding:16px; border-radius:12px; border:none; font-weight:900; font-size:15px; cursor:pointer; }
+  .yes-btn { background:#c6ff1a; color:#0a0a0a; }
+  .no-btn { background:#ff3b3b; color:#0a0a0a; }
+  .levelup-title { color:#c6ff1a; font-size:28px; font-weight:900; margin-bottom:16px; letter-spacing:1px; }
+  .levelup-sub { color:#ccc; font-size:14px; line-height:21px; margin-bottom:24px; }
+  .continue-btn { background:#c6ff1a; color:#0a0a0a; border:none; border-radius:12px; padding:15px 40px; font-weight:900; font-size:15px; cursor:pointer; }
+</style>
+</head>
+<body>
+  <div class="title">DAY 2 WORKOUT</div>
+  <div class="subtitle" id="subtitle"></div>
+  <div class="progress-row" id="progressRow"></div>
+  <div class="center-box" id="centerBox"></div>
+
+  <div class="modal-overlay" id="gatekeeperModal">
+    <div class="modal-card" id="gatekeeperContent"></div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://YOUR-VERCEL-URL.vercel.app/api';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'auth.html';
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+
+    let state = null, slides = [], index = 0, restInterval = null;
+
+    function buildSlides(s) {
+      const raw = [];
+      const push = (label, instructions) => raw.push({ label, instructions });
+
+      if (s.isMaintenance) {
+        push('Pike Push-Ups', 'Set 1 of 3 — go until absolute failure.');
+        push('Pike Push-Ups', 'Set 2 of 3 — go until absolute failure.');
+        push('Pike Push-Ups', 'Set 3 of 3 — go until absolute failure.');
+        push('Master Pushing Flow', '[L-Sit 5s] → [Handstand 5s] → [Planche 5s] → [Return to L-Sit]. 20 reps total.');
+        push('Master Pulling Flow', '[Bar Muscle-Up] → [Full Front Lever 5s] → [Return to Dead Hang]. 20 reps total.');
+      } else {
+        push('Pike Push-Ups', 'Set 1 of 3 — go until absolute failure.');
+        push('Pike Push-Ups', 'Set 2 of 3 — go until absolute failure.');
+        push('Pike Push-Ups', 'Set 3 of 3 — go until absolute failure.');
+        if (s.folder === 2) push('Infinite Flow Loop', '[L-Sit 5s] → [Handstand 5s] → [Planche 5s] → [Return to L-Sit]. 10 reps, no dropping.');
+        (s.warmups || []).forEach((w) => push(w, 'Mastered warmup — complete before today\'s main training.'));
+        push(`Step ${s.currentStep}: ${s.label}`, s.training);
+      }
+
+      const built = [];
+      raw.forEach((set, i) => {
+        built.push({ type: 'set', ...set, setPos: i + 1, total: raw.length });
+        if (i !== raw.length - 1) built.push({ type: 'rest', seconds: 120, setPos: i + 1, total: raw.length });
+        else built[built.length - 1].isLast = true;
+      });
+      return built;
+    }
+
+    function renderProgress() {
+      const row = document.getElementById('progressRow');
+      row.innerHTML = '';
+      const total = slides[index].total;
+      for (let i = 0; i < total; i++) {
+        const seg = document.createElement('div');
+        seg.className = 'segment' + (i < slides[index].setPos ? ' done' : '');
+        row.appendChild(seg);
+      }
+    }
+
+    function render() {
+      const slide = slides[index];
+      renderProgress();
+      document.getElementById('subtitle').textContent = slide.type === 'rest' ? `RESTING (${slide.label})` : `SET ${slide.setPos}/${slide.total} (${slide.label})`;
+      const box = document.getElementById('centerBox');
+
+      if (slide.type === 'rest') {
+        let timeLeft = slide.seconds;
+        box.innerHTML = `<div class="rest-label">REST</div><div class="rest-timer" id="timer">2:00</div><div class="rest-hint">Auto-advancing when timer hits 0</div>`;
+        if (restInterval) clearInterval(restInterval);
+        restInterval = setInterval(() => {
+          timeLeft--;
+          const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+          document.getElementById('timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+          if (timeLeft <= 0) { clearInterval(restInterval); advance(); }
+        }, 1000);
+      } else {
+        box.innerHTML = `
+          <div class="tag">${state.isMaintenance ? 'GOD-MODE ROUTINE' : 'Folder ' + state.folder}</div>
+          <div class="set-title">${slide.label}</div>
+          <div class="instructions">${slide.instructions}</div>
+          <button class="btn" onclick="advance()">${slide.isLast ? 'Finish Session' : 'Done'}</button>
+        `;
+      }
+    }
+
+    function advance() {
+      const current = slides[index];
+      if (current.isLast) { showGatekeeper(); return; }
+      index++;
+      render();
+    }
+
+    function showGatekeeper() {
+      document.getElementById('gatekeeperContent').innerHTML = `
+        <div class="modal-header">SESSION COMPLETE</div>
+        <div class="modal-question">${state.question}</div>
+        <div class="modal-btns">
+          <button class="modal-btn yes-btn" onclick="answerGatekeeper(true)">YES</button>
+          <button class="modal-btn no-btn" onclick="answerGatekeeper(false)">NO</button>
+        </div>
+      `;
+      document.getElementById('gatekeeperModal').classList.add('show');
+    }
+
+    async function answerGatekeeper(passed) {
+      const res = await fetch(`${API_BASE}/day2?action=gatekeeper`, { method: 'POST', headers, body: JSON.stringify({ passed }) });
+      const data = await res.json();
+
+      if (data.leveledUp) {
+        document.getElementById('gatekeeperContent').innerHTML = `
+          <div class="levelup-title">LEVEL UP!</div>
+          <div class="levelup-sub">Your mastered move has been added to your warmup, and the next skill is unlocked.</div>
+          <button class="continue-btn" onclick="window.location.href='dashboard.html'">Continue</button>
+        `;
+      } else {
+        window.location.href = 'dashboard.html';
+      }
+    }
+
+    async function init() {
+      const res = await fetch(`${API_BASE}/day2?action=state`, { headers });
+      state = await res.json();
+      slides = buildSlides(state);
+      render();
+    }
+
+    init();
+  </script>
+</body>
+</html>
