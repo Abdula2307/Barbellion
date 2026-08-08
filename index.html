@@ -559,45 +559,36 @@
       <a href="auth.html">Log In</a>
     </div>
   </footer>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }
+  let deferredPrompt;
+  const heroBtn = document.getElementById('heroInstallBtn');
+  const cardBtn = document.getElementById('cardInstallBtn');
 
-    let deferredPrompt;
-    const heroBtn = document.getElementById('heroInstallBtn');
-    const cardBtn = document.getElementById('cardInstallBtn');
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      
-      heroBtn.style.boxShadow = '0 0 16px rgba(198,255,26,0.5)';
-      cardBtn.style.boxShadow = '0 0 16px rgba(198,255,26,0.5)';
-    });
-
-    async function triggerInstall() {
-      if (deferredPrompt) {
-        // Native Chrome/Android prompt launch
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          deferredPrompt = null;
-        }
-      } else {
-        // Direct browser fallback check for iOS/Safari
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        if (isIOS) {
-          alert('Tap the Share button in Safari, then tap "Add to Home Screen".');
-        } else {
-          alert('Tap your browser options menu (⋮), then select "Install app" or "Add to Home Screen".');
-        }
+  async function triggerInstall() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        deferredPrompt = null;
       }
+    } else {
+      // Direct navigation fallback to signup if PWA prompt isn't ready
+      window.location.href = 'auth.html';
     }
+  }
 
-    heroBtn.addEventListener('click', triggerInstall);
-    cardBtn.addEventListener('click', triggerInstall);
-  </script>
+  heroBtn.addEventListener('click', triggerInstall);
+  cardBtn.addEventListener('click', triggerInstall);
+</script>
+
 </body>
          </html>
