@@ -26,7 +26,9 @@ module.exports = async (req, res) => {
 
       const hashed = await bcrypt.hash(password, 10);
       const user = await db.createUser(username, hashed, country);
-      const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
+      
+      // Updated session duration to 20 hours
+      const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '20h' });
 
       return res.status(201).json({ token, isNewUser: true, userId: user.id });
     } catch (err) {
@@ -46,7 +48,8 @@ module.exports = async (req, res) => {
       const match = await bcrypt.compare(password, user.password);
       if (!match) return res.status(401).json({ message: 'Invalid credentials.' });
 
-      const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
+      // Updated session duration to 20 hours
+      const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '20h' });
       return res.json({ token, isNewUser: !user.onboarded, userId: user.id });
     } catch (err) {
       console.error(err);
