@@ -1,61 +1,76 @@
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const db = require('../db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
-
-module.exports = async (req, res) => {
-  if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
+module.exports = async function handler(req, res) {
+  // Allow only POST requests
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
 
   const { action } = req.query;
+  const { username, password, country } = req.body;
 
-  if (action === 'signup') {
-    try {
-      const { username, password, country } = req.body;
-      if (!username || !password) return res.status(400).json({ message: 'Username and password required.' });
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username and password are required.' });
+  }
 
-      const hasMinLength = password.length >= 8;
-      const hasLetter = /[a-zA-Z]/.test(password);
-      const hasNumber = /[0-9]/.test(password);
-      if (!hasMinLength || !hasLetter || !hasNumber) {
-        return res.status(400).json({ message: 'Password must be 8+ chars with letters and numbers.' });
+  try {
+    if (action === 'signup') {
+      // Check if user already exists
+      const existingUser = await db.findUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ message: 'Username already taken.' });
       }
 
-      const existing = await db.findUserByUsername(username);
-      if (existing) return res.status(409).json({ message: 'Username already taken.' });
+      // Hash password and save user
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = await db.createUser(username, hashedPassword, country || '');
 
-      const hashed = await bcrypt.hash(password, 10);
-      const user = await db.createUser(username, hashed, country);
-      
-      // Updated session duration to 20 hours
-      const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '20h' });
+      // Sign JWT valid for 30 days
+      const token = jwt.sign(
+        { userId: newUser.id, username: newUser.username },
+        process.env.JWT_SECRET,
+        { expiresIn: '30d' }
+      );
 
-      return res.status(201).json({ token, isNewUser: true, userId: user.id });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Signup failed.' });
-    }
-  }
+      return res.status(201).json({
+        message: 'Account created successfully.',
+        token,
+        isNewUser: true
+      });
 
-  if (action === 'login') {
-    try {
-      const { username, password } = req.body;
-      if (!username || !password) return res.status(400).json({ message: 'Username and password required.' });
-
+    } else if (action === 'login') {
+      // Find user
       const user = await db.findUserByUsername(username);
-      if (!user) return res.status(401).json({ message: 'Invalid credentials.' });
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid username or password.' });
+      }
 
-      const match = await bcrypt.compare(password, user.password);
-      if (!match) return res.status(401).json({ message: 'Invalid credentials.' });
+      // Compare password
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Invalid username or password.' });
+      }
 
-      // Updated session duration to 20 hours
-      const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '20h' });
-      return res.json({ token, isNewUser: !user.onboarded, userId: user.id });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Login failed.' });
+      // Sign JWT valid for 30 days
+      const token = jwt.sign(
+        { userId: user.id, username: user.username },
+        process.env.JWT_SECRET,
+        { expiresIn: '30d' }
+      );
+
+      return res.status(200).json({
+        message: 'Login successful.',
+        token,
+        isNewUser: !user.onboarded
+      });
+
+    } else {
+      return res.status(400).json({ message: 'Invalid action parameter.' });
     }
+  } catch (error) {
+    console.error('Auth Error:', error);
+    return res.status(500).json({ message: 'Internal server error.' });
   }
-
-  return res.status(400).json({ message: 'Unknown action.' });
 };
