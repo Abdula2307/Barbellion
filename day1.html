@@ -34,16 +34,9 @@
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 
     const RAW_SETS = [
-      { label: 'Pull-Up Challenge', instructions: 'Do as many reps as possible until you hit 50 total. If fatigued, DO NOT drop to the floor — hang, rest 10-20s, resume.' },
-      { label: 'Push-Ups', instructions: 'Push-ups to absolute failure. Set 1 of 2.' },
-      { label: 'Push-Ups', instructions: 'Push-ups to absolute failure. Set 2 of 2.' },
-      { label: 'Arm Superset', instructions: '30 Hammer Curls straight into 30 Skull Crushers, repeated 3 times. No rest between movements.' },
-      { label: 'Leg Circuit', instructions: 'Lunges → Squats → Calf Raises → Single-Leg Calf Raises, straight through. Set 1 of 2.' },
-      { label: 'Leg Circuit', instructions: 'Lunges → Squats → Calf Raises → Single-Leg Calf Raises, straight through. Set 2 of 2.' },
-      { label: 'Forearm Finisher', instructions: 'Wrist Extensions → Flexions → Rotations, straight through. Set 1 of 2.' },
-      { label: 'Forearm Finisher', instructions: 'Wrist Extensions → Flexions → Rotations, straight through. Set 2 of 2.' },
-      { label: 'Ab Superset', instructions: 'Hanging Leg Raises → Bicycle Crunches → Plank Hold → Russian Twists. Set 1 of 2.' },
-      { label: 'Ab Superset', instructions: 'Hanging Leg Raises → Bicycle Crunches → Plank Hold → Russian Twists. Set 2 of 2.' },
+      { label: 'Push-Up / Pull-Up Ladder', instructions: '10 Push-Ups → immediately 10 Pull-Ups. Then 9→9, 8→8, 7→7, 6→6, 5→5, 4→4, 3→3. No rest between any of it — about 100 total reps.' },
+      { label: 'Legs Circuit', instructions: '30 Squats → Calf Raises (max reps). Repeat this pair 3 times straight through, no rest between rounds.' },
+      { label: 'Core Circuit', instructions: '25 Leg Raises → 40 Mountain Climbers → 1 Minute Plank Hold. Repeat this whole circuit 3 times, no rest.' },
     ];
 
     const SLIDES = [];
