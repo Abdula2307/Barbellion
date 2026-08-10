@@ -62,6 +62,9 @@
   </div>
 
   <div class="workout-section" id="workoutSection"></div>
+  <div style="text-align:center; margin-top:10px;">
+    <span onclick="openLevelModal()" style="color:#666; font-size:11px; text-decoration:underline; cursor:pointer;">Accidentally leveled up? Fix your level</span>
+  </div>
 
   <div class="section-title">AI NUTRITION CHAT</div>
   <div class="chat-container">
@@ -72,6 +75,15 @@
   <div class="input-row">
     <input type="text" id="chatInput" placeholder="Ask AI about your food..." onkeypress="if(event.key==='Enter')sendMessage()">
     <button class="send-btn" onclick="sendMessage()">➤</button>
+  </div>
+
+  <div class="modal-overlay" id="levelModal">
+    <div class="modal-card">
+      <div class="modal-title">Change Skill Level</div>
+      <div class="modal-subtitle">Tapped "achieved" by mistake? Pick the level you actually want to restart from.</div>
+      <input type="number" id="levelInput" placeholder="Level (1-16)" min="1" max="16">
+      <button class="modal-btn" onclick="submitLevelChange()">Save</button>
+    </div>
   </div>
 
   <div class="modal-overlay" id="weightModal">
@@ -160,9 +172,29 @@
       }
     }
 
+    function openLevelModal() {
+      document.getElementById('levelModal').classList.add('show');
+    }
+
+    async function submitLevelChange() {
+      const level = parseInt(document.getElementById('levelInput').value, 10);
+      if (!level || level < 1 || level > 16) { alert('Enter a level between 1 and 16.'); return; }
+      await fetch(`${API_BASE}/day2?action=select-level`, { method: 'POST', headers, body: JSON.stringify({ level }) });
+      document.getElementById('levelModal').classList.remove('show');
+      fetchTodayWorkout();
+    }
+
+    async function requestNotifyPermission() {
+      if ('Notification' in window && Notification.permission === 'default') {
+        try { await Notification.requestPermission(); } catch {}
+      }
+    }
+
     fetchStatus();
     fetchTodayWorkout();
     fetchWeightCheckStatus();
+    requestNotifyPermission();
   </script>
 </body>
   </html>
+
