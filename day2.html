@@ -17,9 +17,12 @@
   .set-title { font-size:24px; font-weight:800; text-align:center; margin-bottom:16px; }
   .instructions { color:#ccc; font-size:14px; text-align:center; line-height:20px; margin-bottom:30px; padding:0 8px; }
   .btn { background:#c6ff1a; color:#0a0a0a; border:none; border-radius:10px; padding:16px 40px; font-weight:700; font-size:16px; cursor:pointer; }
+  .btn-outline { background:transparent; border:1px solid #c6ff1a; color:#c6ff1a; }
   .rest-label { color:#c6ff1a; font-size:15px; font-weight:800; letter-spacing:3px; margin-bottom:10px; }
   .rest-timer { font-size:60px; font-weight:900; margin-bottom:18px; }
   .rest-hint { color:#666; font-size:12px; }
+  .skill-timer-corner { position:fixed; top:16px; right:16px; background:#141414; border:1px solid #2a2a2a; border-radius:10px; padding:8px 14px; font-weight:900; font-size:18px; color:#c6ff1a; }
+  .flow-rep { color:#666; font-size:12px; letter-spacing:1px; margin-bottom:8px; }
   .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); align-items:center; justify-content:center; padding:24px; z-index:100; }
   .modal-overlay.show { display:flex; }
   .modal-card { background:#141414; border:1px solid #242424; border-radius:18px; padding:26px; width:100%; max-width:420px; text-align:center; }
@@ -32,10 +35,12 @@
   .levelup-title { color:#c6ff1a; font-size:28px; font-weight:900; margin-bottom:16px; letter-spacing:1px; }
   .levelup-sub { color:#ccc; font-size:14px; line-height:21px; margin-bottom:24px; }
   .continue-btn { background:#c6ff1a; color:#0a0a0a; border:none; border-radius:12px; padding:15px 40px; font-weight:900; font-size:15px; cursor:pointer; }
+  .level-link { position:fixed; top:16px; left:16px; font-size:12px; color:#666; text-decoration:underline; cursor:pointer; }
 </style>
 </head>
 <body>
-  <div class="title">DAY 2 WORKOUT</div>
+  <div class="level-link" onclick="window.location.href='dashboard.html'">← Dashboard</div>
+  <div class="title">DAY 2 SKILLS</div>
   <div class="subtitle" id="subtitle"></div>
   <div class="progress-row" id="progressRow"></div>
   <div class="center-box" id="centerBox"></div>
@@ -50,76 +55,217 @@
     if (!token) window.location.href = 'auth.html';
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 
-    let state = null, slides = [], index = 0, restInterval = null;
+    let state = null, blocks = [], index = 0, restInterval = null, skillInterval = null;
 
-    function buildSlides(s) {
-      const raw = [];
-      const push = (label, instructions) => raw.push({ label, instructions });
+    // ---- Notifications ----
+    async function requestNotifyPermission() {
+      if ('Notification' in window && Notification.permission === 'default') {
+        try { await Notification.requestPermission(); } catch {}
+      }
+    }
+    async function notify(title, body) {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        reg.showNotification(title, { body, icon: 'icon-192.png', badge: 'icon-192.png' });
+      } catch {}
+    }
 
-      if (s.isMaintenance) {
-        push('Pike Push-Ups', 'Set 1 of 3 — go until absolute failure.');
-        push('Pike Push-Ups', 'Set 2 of 3 — go until absolute failure.');
-        push('Pike Push-Ups', 'Set 3 of 3 — go until absolute failure.');
-        push('Master Pushing Flow', '[L-Sit 5s] → [Handstand 5s] → [Planche 5s] → [Return to L-Sit]. 20 reps total.');
-        push('Master Pulling Flow', '[Bar Muscle-Up] → [Full Front Lever 5s] → [Return to Dead Hang]. 20 reps total.');
-      } else {
-        push('Pike Push-Ups', 'Set 1 of 3 — go until absolute failure.');
-        push('Pike Push-Ups', 'Set 2 of 3 — go until absolute failure.');
-        push('Pike Push-Ups', 'Set 3 of 3 — go until absolute failure.');
-        if (s.folder === 2) push('Infinite Flow Loop', '[L-Sit 5s] → [Handstand 5s] → [Planche 5s] → [Return to L-Sit]. 10 reps, no dropping.');
-        (s.warmups || []).forEach((w) => push(w, 'Mastered warmup — complete before today\'s main training.'));
-        push(`Step ${s.currentStep}: ${s.label}`, s.training);
+    // ---- Build the session as a flat list of blocks ----
+    function buildBlocks(s) {
+      const list = [];
+      const pushSet = (block) => list.push(block);
+
+      // 3x Pike Push-ups, always first
+      for (let i = 1; i <= 3; i++) {
+        pushSet({ kind: 'pike', label: 'Pike Push-Ups', instructions: `Set ${i} of 3 — go until absolute failure.`, setPos: i, total: 3 });
+        pushSet({ kind: 'rest', seconds: 120 });
       }
 
-      const built = [];
-      raw.forEach((set, i) => {
-        built.push({ type: 'set', ...set, setPos: i + 1, total: raw.length });
-        if (i !== raw.length - 1) built.push({ type: 'rest', seconds: 120, setPos: i + 1, total: raw.length });
-        else built[built.length - 1].isLast = true;
-      });
-      return built;
+      if (s.isMaintenance) {
+        pushSet({ kind: 'flow', flow: s.flows.flowBFinal, tag: 'Master Pushing Flow' });
+        pushSet({ kind: 'rest', seconds: 120 });
+        pushSet({ kind: 'flow', flow: s.flows.flowC, tag: 'Master Pulling Flow', isLast: true });
+      } else {
+        // Warmups from backend
+        (s.warmups || []).forEach((w) => {
+          if (w.kind === 'flow') {
+            pushSet({ kind: 'flow', flow: s.flows[w.flowKey], tag: 'Warmup Flow' });
+          } else if (w.kind === 'hold' && w.targetSeconds) {
+            pushSet({ kind: 'warmup-hold', label: w.label, seconds: w.targetSeconds });
+          } else {
+            pushSet({ kind: 'warmup-manual', label: w.label });
+          }
+          pushSet({ kind: 'rest', seconds: 120 });
+        });
+
+        // Today's new/untested skill — 20 min window, then straight to gatekeeper
+        pushSet({ kind: 'skill', label: s.label, target: s.target, type: s.type, isLast: true });
+      }
+
+      return list;
     }
 
     function renderProgress() {
       const row = document.getElementById('progressRow');
       row.innerHTML = '';
-      const total = slides[index].total;
+      const total = blocks.length;
       for (let i = 0; i < total; i++) {
         const seg = document.createElement('div');
-        seg.className = 'segment' + (i < slides[index].setPos ? ' done' : '');
+        seg.className = 'segment' + (i <= index ? ' done' : '');
         row.appendChild(seg);
       }
     }
 
-    function render() {
-      const slide = slides[index];
-      renderProgress();
-      document.getElementById('subtitle').textContent = slide.type === 'rest' ? `RESTING (${slide.label})` : `SET ${slide.setPos}/${slide.total} (${slide.label})`;
-      const box = document.getElementById('centerBox');
+    function clearTimers() {
+      if (restInterval) clearInterval(restInterval);
+      if (skillInterval) clearInterval(skillInterval);
+    }
 
-      if (slide.type === 'rest') {
-        let timeLeft = slide.seconds;
-        box.innerHTML = `<div class="rest-label">REST</div><div class="rest-timer" id="timer">2:00</div><div class="rest-hint">Auto-advancing when timer hits 0</div>`;
-        if (restInterval) clearInterval(restInterval);
-        restInterval = setInterval(() => {
-          timeLeft--;
-          const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
-          document.getElementById('timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
-          if (timeLeft <= 0) { clearInterval(restInterval); advance(); }
-        }, 1000);
-      } else {
+    function render() {
+      clearTimers();
+      const block = blocks[index];
+      renderProgress();
+      const box = document.getElementById('centerBox');
+      document.getElementById('subtitle').textContent = state.isMaintenance ? 'GOD-MODE ROUTINE' : `Level ${state.currentStep}: ${state.label}`;
+
+      if (block.kind === 'pike') {
         box.innerHTML = `
-          <div class="tag">${state.isMaintenance ? 'GOD-MODE ROUTINE' : 'Folder ' + state.folder}</div>
-          <div class="set-title">${slide.label}</div>
-          <div class="instructions">${slide.instructions}</div>
-          <button class="btn" onclick="advance()">${slide.isLast ? 'Finish Session' : 'Done'}</button>
+          <div class="set-title">${block.label}</div>
+          <div class="instructions">${block.instructions}</div>
+          <button class="btn" onclick="advance()">Done</button>
         `;
+        return;
+      }
+
+      if (block.kind === 'rest') {
+        renderRest(block.seconds);
+        return;
+      }
+
+      if (block.kind === 'warmup-hold') {
+        renderStartThen(`Warmup: ${block.label}`, `Hold for ${block.seconds}s once you start.`, () => renderHoldTimer(block.label, block.seconds));
+        return;
+      }
+
+      if (block.kind === 'warmup-manual') {
+        renderStartThen(`Warmup: ${block.label}`, `Complete it, then tap Done.`, () => {
+          box.innerHTML = `
+            <div class="set-title">${block.label}</div>
+            <button class="btn" onclick="advance()">Done</button>
+          `;
+        });
+        return;
+      }
+
+      if (block.kind === 'flow') {
+        renderStartThen(block.tag, `${block.flow.name} — ${block.flow.reps} reps`, () => runFlow(block.flow, block.isLast));
+        return;
+      }
+
+      if (block.kind === 'skill') {
+        renderStartThen(`Level ${state.currentStep}: ${block.label}`, `Target: ${block.target}. You'll have 20 minutes.`, () => runSkillTimer(block));
+        return;
       }
     }
 
+    function renderStartThen(title, sub, onStart) {
+      const box = document.getElementById('centerBox');
+      box.innerHTML = `
+        <div class="tag">${state.isMaintenance ? '' : ('Level ' + state.currentStep)}</div>
+        <div class="set-title">${title}</div>
+        <div class="instructions">${sub}</div>
+        <button class="btn" id="startBtn">Start</button>
+      `;
+      document.getElementById('startBtn').onclick = onStart;
+    }
+
+    function renderRest(seconds) {
+      const box = document.getElementById('centerBox');
+      let timeLeft = seconds;
+      box.innerHTML = `<div class="rest-label">REST</div><div class="rest-timer" id="timer">2:00</div><div class="rest-hint">Auto-advancing when timer hits 0</div>`;
+      restInterval = setInterval(() => {
+        timeLeft--;
+        const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+        document.getElementById('timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        if (timeLeft <= 0) { clearInterval(restInterval); notify('Rest over', "Let's go — next set is up."); advance(); }
+      }, 1000);
+    }
+
+    function renderHoldTimer(label, seconds) {
+      const box = document.getElementById('centerBox');
+      let timeLeft = seconds;
+      box.innerHTML = `<div class="set-title">${label}</div><div class="rest-timer" id="timer">${seconds}s</div>`;
+      restInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').textContent = `${Math.max(timeLeft,0)}s`;
+        if (timeLeft <= 0) { clearInterval(restInterval); advance(); }
+      }, 1000);
+    }
+
+    function runFlow(flow, isLast) {
+      const box = document.getElementById('centerBox');
+      const queue = [];
+      for (let r = 1; r <= flow.reps; r++) {
+        flow.sequence.forEach((seg) => queue.push({ ...seg, rep: r }));
+      }
+      let qi = 0;
+
+      function playSegment() {
+        if (qi >= queue.length) {
+          if (isLast) { showGatekeeper(); } else { advance(); }
+          return;
+        }
+        const seg = queue[qi];
+        let timeLeft = seg.seconds;
+        box.innerHTML = `
+          <div class="flow-rep">REP ${seg.rep}/${flow.reps}</div>
+          <div class="set-title">${seg.label}</div>
+          <div class="rest-timer" id="timer">${timeLeft}s</div>
+        `;
+        restInterval = setInterval(() => {
+          timeLeft--;
+          document.getElementById('timer').textContent = `${Math.max(timeLeft,0)}s`;
+          if (timeLeft <= 0) {
+            clearInterval(restInterval);
+            qi++;
+            playSegment();
+          }
+        }, 1000);
+      }
+      playSegment();
+    }
+
+    function runSkillTimer(block) {
+      const box = document.getElementById('centerBox');
+      let secondsLeft = 20 * 60;
+      box.innerHTML = `
+        <div class="skill-timer-corner" id="skillTimer">20:00</div>
+        <div class="set-title">${block.label}</div>
+        <div class="instructions">Target: ${block.target}. Hit Done the moment you achieve it — or the timer runs out and we ask anyway.</div>
+        <button class="btn" onclick="finishSkillAttempt()">Done</button>
+      `;
+      skillInterval = setInterval(() => {
+        secondsLeft--;
+        const m = Math.floor(secondsLeft / 60), s = secondsLeft % 60;
+        const el = document.getElementById('skillTimer');
+        if (el) el.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        if (secondsLeft <= 0) {
+          clearInterval(skillInterval);
+          notify("Time's up", 'Did you hit it?');
+          finishSkillAttempt();
+        }
+      }, 1000);
+    }
+
+    function finishSkillAttempt() {
+      clearTimers();
+      showGatekeeper();
+    }
+
     function advance() {
-      const current = slides[index];
-      if (current.isLast) { showGatekeeper(); return; }
+      clearTimers();
+      if (index + 1 >= blocks.length) { showGatekeeper(); return; }
       index++;
       render();
     }
@@ -152,9 +298,10 @@
     }
 
     async function init() {
+      requestNotifyPermission();
       const res = await fetch(`${API_BASE}/day2?action=state`, { headers });
       state = await res.json();
-      slides = buildSlides(state);
+      blocks = buildBlocks(state);
       render();
     }
 
