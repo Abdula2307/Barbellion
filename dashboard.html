@@ -97,7 +97,7 @@
   </div>
 
   <script>
-    const API_BASE = 'https://YOUR-VERCEL-URL.vercel.app/api';
+    const API_BASE = '/api';
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'auth.html';
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
@@ -197,4 +197,5 @@
   </script>
 </body>
   </html>
+
 
