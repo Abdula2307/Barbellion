@@ -9,36 +9,116 @@ function calculateWaterTarget(weightKg) {
   return Math.round(weightKg * 35 + 500);
 }
 
-// ---- Skill tree (Day 2) ----
+// ---- Skill tree (Day 2) — single unified track, 16 levels ----
+// type: 'hold' (simple timed hold) | 'reps' (rep target) | 'flow' (final maintenance level)
+// untested skills get a 20-min attempt window + Done button + Y/N gatekeeper.
+// mastered skills (already passed) become part of the warmup with a short auto-timer.
+
 const STEPS = {
-  1: { folder: 1, label: 'The L-Sit Foundation', training: 'Ground L-Sit Hold (Goal: Accumulated 1 Minute)', question: 'Did you achieve the 1-minute L-Sit hold today?', warmupAdd: 'L-Sit Hold (1 min)' },
-  2: { folder: 1, label: 'The Vertical Balance Era', training: 'Forearm Handstand & Wall Handstand Practice', question: 'Did you achieve a stable 1-minute freestanding Handstand today?', warmupAdd: 'Handstand Hold (1 min)' },
-  3: { folder: 1, label: 'The Press Link', training: 'L-Sit to Handstand Press Transitions', question: 'Did you achieve a clean, dynamic L-Sit to Handstand Press today?', warmupAdd: 'L-Sit to Handstand Press' },
-  4: { folder: 1, label: 'The Planche Entry (Frog Pose)', training: 'Frog Pose / Crow Stand', question: 'Did you achieve a solid Frog Pose balance today?', warmupAdd: 'Frog Pose Hold' },
-  5: { folder: 1, label: 'Single-Leg Planche', training: 'Single-Leg Planche', question: 'Did you achieve the Single-Leg Planche hold today?', warmupAdd: 'Single-Leg Planche Hold' },
-  6: { folder: 1, label: 'Full Planche Mastery', training: 'Full Planche Hold (Goal: 5 seconds)', question: 'Did you achieve a perfect 5-second Full Planche today?', warmupAdd: null, completesFolder: 1 },
-  7: { folder: 2, label: 'Passive & Active Hang Conditioning', training: 'Scapular Pull-ups & Dead Hangs', question: 'Did you achieve the 1.5-minute continuous dead hang today?', warmupAdd: 'Dead Hang (1 min)' },
-  8: { folder: 2, label: 'The High Chest-to-Bar Pull-up', training: 'Strict Chest-to-Bar Pull-ups (10 reps)', question: 'Did you achieve 10 clean strict chest-to-bar pull-ups today?', warmupAdd: '5 Chest-to-Bar Pull-ups' },
-  9: { folder: 2, label: 'Explosive Belly-Button Pulls', training: 'High Explosive Pull-ups', question: 'Did you achieve 3 consecutive belly-button explosive pull-ups today?', warmupAdd: '3 Explosive Pull-ups' },
-  10: { folder: 2, label: 'The Jumping & Negative Muscle-Up', training: 'Jump into muscle-up + slow negative', question: 'Did you control 5 ultra-slow muscle-up negatives today?', warmupAdd: '3 Controlled Negatives' },
-  11: { folder: 2, label: 'Above the Bar Control', training: 'Strict, slow Bar Muscle-Ups', question: 'Did you achieve 5 strict, consecutive Bar Muscle-Ups today?', warmupAdd: '2 Strict Muscle-Ups' },
-  12: { folder: 2, label: 'Front Lever Core Compression', training: 'Tuck Front Lever Hold', question: 'Did you hold a clean Tuck Front Lever for 20 seconds today?', warmupAdd: '10s Tuck Lever Hold' },
-  13: { folder: 2, label: 'Advanced Tuck Front Lever', training: 'Advanced Tuck Front Lever Hold', question: 'Did you achieve a flat-back Advanced Tuck hold for 15 seconds today?', warmupAdd: '10s Advanced Tuck Hold' },
-  14: { folder: 2, label: 'Single-Leg Front Lever', training: 'Single-Leg Front Lever Hold', question: 'Did you achieve a clean 10-second Single-Leg Front Lever today?', warmupAdd: 'Single-Leg Lever Holds' },
-  15: { folder: 2, label: 'Full Front Lever Mastery', training: 'Full Front Lever Hold (5 seconds)', question: 'Did you achieve a perfect 5-second Full Front Lever today?', warmupAdd: null, completesFolder: 2 },
-  16: { folder: 3, label: 'GOD-MODE ROUTINE', training: 'Master Pushing Flow (20) + Master Pulling Flow (20)', question: 'Did you complete all 20 Pushing and 20 Pulling Loops today?', warmupAdd: null, isMaintenance: true },
+  1:  { label: 'L-Sit Hold', type: 'hold', target: '1 minute', targetSeconds: 60,
+        question: 'Did you achieve the 1-minute L-Sit hold today?' },
+  2:  { label: 'Crow Pose', type: 'hold', target: '1 minute', targetSeconds: 60,
+        question: 'Did you achieve the 1-minute Crow Pose today?' },
+  3:  { label: 'Wall-Assisted Handstand', type: 'hold', target: '1 minute', targetSeconds: 60,
+        question: 'Did you achieve the 1-minute Wall-Assisted Handstand today?' },
+  4:  { label: 'Freestanding Handstand', type: 'hold', target: '1 minute', targetSeconds: 60,
+        question: 'Did you achieve a stable 1-minute freestanding Handstand today?' },
+  5:  { label: 'L-Sit to Handstand Press', type: 'reps', target: 'a clean transition',
+        question: 'Did you achieve a clean L-Sit to Handstand Press today?',
+        unlocksFlow: 'flowA' },
+  6:  { label: 'Crow Pose to Planche', type: 'hold', target: '5 seconds', targetSeconds: 5,
+        question: 'Did you achieve a 5-second Full Planche today?',
+        unlocksFlow: 'flowB', folderComplete: 'push' },
+  7:  { label: 'Dead Hang', type: 'hold', target: '1.5 minutes', targetSeconds: 90,
+        question: 'Did you achieve the 1.5-minute continuous Dead Hang today?',
+        warmupAdd: { label: 'Dead Hang', target: '1 min' } },
+  8:  { label: 'Strict Chest-to-Bar Pull-ups', type: 'reps', target: '10 reps',
+        question: 'Did you achieve 10 clean strict Chest-to-Bar Pull-ups today?',
+        warmupAdd: { label: '5 Chest-to-Bar Pull-ups' } },
+  9:  { label: 'High Explosive Pull-ups', type: 'reps', target: '3 consecutive belly-button pull-ups',
+        question: 'Did you achieve 3 consecutive belly-button explosive pull-ups today?',
+        warmupAdd: { label: '3 Explosive Pull-ups' } },
+  10: { label: 'Jumping & Negative Muscle-Up', type: 'reps', target: '5 ultra-slow negatives',
+        question: 'Did you control 5 ultra-slow muscle-up negatives today?',
+        warmupAdd: { label: '3 Controlled Negatives' } },
+  11: { label: 'Strict Bar Muscle-Up', type: 'reps', target: '5 strict, consecutive reps',
+        question: 'Did you achieve 5 strict, consecutive Bar Muscle-Ups today?',
+        warmupAdd: { label: '2 Strict Muscle-Ups' } },
+  12: { label: 'Tuck Front Lever', type: 'hold', target: '20 seconds', targetSeconds: 20,
+        question: 'Did you hold a clean Tuck Front Lever for 20 seconds today?',
+        warmupAdd: { label: '10s Tuck Lever Hold' } },
+  13: { label: 'Advanced Tuck Front Lever', type: 'hold', target: '15 seconds', targetSeconds: 15,
+        question: 'Did you achieve a flat-back Advanced Tuck hold for 15 seconds today?',
+        warmupAdd: { label: '10s Advanced Tuck Hold' } },
+  14: { label: 'Single-Leg Front Lever', type: 'hold', target: '10 seconds', targetSeconds: 10,
+        question: 'Did you achieve a clean 10-second Single-Leg Front Lever today?',
+        warmupAdd: { label: 'Single-Leg Lever Holds' } },
+  15: { label: 'Full Front Lever', type: 'hold', target: '5 seconds', targetSeconds: 5,
+        question: 'Did you achieve a perfect 5-second Full Front Lever today?',
+        unlocksFlow: 'flowC', folderComplete: 'pull' },
+  16: { label: 'GOD-MODE ROUTINE', type: 'flow', isMaintenance: true,
+        question: 'Did you complete all 20 Pushing and 20 Pulling loop reps today?' },
 };
 
-function getStepData(step) { return STEPS[step] || STEPS[16]; }
-function getWarmups(step) {
-  const warmups = [];
-  for (let i = 1; i < step; i++) if (STEPS[i]?.warmupAdd) warmups.push(STEPS[i].warmupAdd);
-  return warmups;
+// Flow definitions used as warmups/finishers once unlocked
+const FLOWS = {
+  flowA: { name: 'Push Flow', reps: 10, sequence: [
+    { label: 'L-Sit', seconds: 5 }, { label: 'Handstand', seconds: 5 }, { label: 'L-Sit', seconds: 5 },
+  ] },
+  flowB: { name: 'Push Flow', reps: 10, sequence: [
+    { label: 'L-Sit', seconds: 5 }, { label: 'Handstand', seconds: 5 }, { label: 'Planche', seconds: 5 }, { label: 'L-Sit', seconds: 5 },
+  ] },
+  flowBFinal: { name: 'Master Pushing Flow', reps: 20, sequence: [
+    { label: 'L-Sit', seconds: 5 }, { label: 'Handstand', seconds: 5 }, { label: 'Planche', seconds: 5 }, { label: 'L-Sit', seconds: 5 },
+  ] },
+  flowC: { name: 'Master Pulling Flow', reps: 20, sequence: [
+    { label: 'Muscle-Up Hold', seconds: 5 }, { label: 'Front Lever Hold', seconds: 5 }, { label: 'Muscle-Up Hold', seconds: 5 },
+  ] },
+};
+
+function getStepData(step) {
+  return STEPS[step] || STEPS[16];
 }
+
+// Builds the ordered list of warmup blocks for a given current step.
+// Each block is either { kind: 'hold', label, targetSeconds } or { kind: 'flow', flowKey }.
+function getWarmupBlocks(step) {
+  const blocks = [];
+
+  if (step <= 4) {
+    if (step > 1) blocks.push({ kind: 'hold', label: 'L-Sit Hold', targetSeconds: 60 });
+    return blocks;
+  }
+
+  // Level 5+ achieved -> push warmup becomes a flow instead of plain L-Sit
+  if (step >= 6) {
+    blocks.push({ kind: 'flow', flowKey: 'flowB' });
+  } else if (step >= 5) {
+    blocks.push({ kind: 'flow', flowKey: 'flowA' });
+  }
+
+  // Pull warmups accumulate individually, same as before
+  for (let i = 7; i < step; i++) {
+    const s = STEPS[i];
+    if (s?.warmupAdd) blocks.push({ kind: 'hold', label: s.warmupAdd.label, targetSeconds: null });
+  }
+
+  return blocks;
+}
+
 function advanceStep(current, passed) {
   const step = getStepData(current);
   if (step.isMaintenance) return current;
   return passed ? current + 1 : current;
 }
 
-module.exports = { calculateBaselineCalories, calculateWaterTarget, getStepData, getWarmups, advanceStep };
+module.exports = {
+  calculateBaselineCalories,
+  calculateWaterTarget,
+  getStepData,
+  getWarmupBlocks,
+  advanceStep,
+  STEPS,
+  FLOWS,
+};
+
