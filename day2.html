@@ -17,6 +17,7 @@
   .set-title { font-size:24px; font-weight:800; text-align:center; margin-bottom:16px; }
   .instructions { color:#ccc; font-size:14px; text-align:center; line-height:20px; margin-bottom:30px; padding:0 8px; }
   .btn { background:#c6ff1a; color:#0a0a0a; border:none; border-radius:10px; padding:16px 40px; font-weight:700; font-size:16px; cursor:pointer; }
+  .demo-video { width:100%; max-width:340px; border-radius:14px; margin-bottom:22px; background:#000; }
   .btn-outline { background:transparent; border:1px solid #c6ff1a; color:#c6ff1a; }
   .rest-label { color:#c6ff1a; font-size:15px; font-weight:800; letter-spacing:3px; margin-bottom:10px; }
   .rest-timer { font-size:60px; font-weight:900; margin-bottom:18px; }
@@ -78,7 +79,7 @@
 
       // 3x Pike Push-ups, always first
       for (let i = 1; i <= 3; i++) {
-        pushSet({ kind: 'pike', label: 'Pike Push-Ups', instructions: `Set ${i} of 3 — go until absolute failure.`, setPos: i, total: 3 });
+        pushSet({ kind: 'pike', label: 'Pike Push-Ups', instructions: `Set ${i} of 3 — go until absolute failure.`, setPos: i, total: 3, video: 'pike-pushups.mp4' });
         pushSet({ kind: 'rest', seconds: 120 });
       }
 
@@ -100,7 +101,7 @@
         });
 
         // Today's new/untested skill — 20 min window, then straight to gatekeeper
-        pushSet({ kind: 'skill', label: s.label, target: s.target, type: s.type, isLast: true });
+        pushSet({ kind: 'skill', label: s.label, target: s.target, type: s.type, video: s.video, isLast: true });
       }
 
       return list;
@@ -130,8 +131,12 @@
       document.getElementById('subtitle').textContent = state.isMaintenance ? 'GOD-MODE ROUTINE' : `Level ${state.currentStep}: ${state.label}`;
 
       if (block.kind === 'pike') {
+        const videoTag = block.video
+          ? `<video class="demo-video" src="videos/${block.video}" autoplay muted loop playsinline disablePictureInPicture controlsList="nodownload noremoteplayback nofullscreen" oncontextmenu="return false" onerror="this.style.display='none'"></video>`
+          : '';
         box.innerHTML = `
           <div class="set-title">${block.label}</div>
+          ${videoTag}
           <div class="instructions">${block.instructions}</div>
           <button class="btn" onclick="advance()">Done</button>
         `;
@@ -164,16 +169,20 @@
       }
 
       if (block.kind === 'skill') {
-        renderStartThen(`Level ${state.currentStep}: ${block.label}`, `Target: ${block.target}. You'll have 20 minutes.`, () => runSkillTimer(block));
+        renderStartThen(`Level ${state.currentStep}: ${block.label}`, `Target: ${block.target}. You'll have 20 minutes.`, () => runSkillTimer(block), block.video);
         return;
       }
     }
 
-    function renderStartThen(title, sub, onStart) {
+    function renderStartThen(title, sub, onStart, video) {
       const box = document.getElementById('centerBox');
+      const videoTag = video
+        ? `<video class="demo-video" src="videos/${video}" autoplay muted loop playsinline disablePictureInPicture controlsList="nodownload noremoteplayback nofullscreen" oncontextmenu="return false" onerror="this.style.display='none'"></video>`
+        : '';
       box.innerHTML = `
         <div class="tag">${state.isMaintenance ? '' : ('Level ' + state.currentStep)}</div>
         <div class="set-title">${title}</div>
+        ${videoTag}
         <div class="instructions">${sub}</div>
         <button class="btn" id="startBtn">Start</button>
       `;
@@ -309,4 +318,3 @@
   </script>
 </body>
 </html>
-
