@@ -9,7 +9,7 @@ function authCheck(req) {
   const authHeader = req.headers.authorization;
   if (!authHeader) return null;
   try {
-    return jwt.verify(authHeader.split(' ')[1], JWT_SECRET).id;
+    return jwt.verify(authHeader.split(' ')[1], JWT_SECRET).userId;
   } catch {
     return null;
   }
