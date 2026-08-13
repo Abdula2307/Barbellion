@@ -1,4 +1,4 @@
-    const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const db = require('../db');
 const { getStepData, getWarmupBlocks, advanceStep, FLOWS } = require('../helpers');
 
@@ -34,6 +34,7 @@ module.exports = async (req, res) => {
         target: stepData.target,
         targetSeconds: stepData.targetSeconds || null,
         question: stepData.question,
+        video: stepData.video || null,
         warmups,
         flows: FLOWS,
         isMaintenance: !!stepData.isMaintenance,
