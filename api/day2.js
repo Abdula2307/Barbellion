@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+    const jwt = require('jsonwebtoken');
 const db = require('../db');
 const { getStepData, getWarmupBlocks, advanceStep, FLOWS } = require('../helpers');
 
@@ -8,7 +8,7 @@ function authCheck(req) {
   const authHeader = req.headers.authorization;
   if (!authHeader) return null;
   try {
-    return jwt.verify(authHeader.split(' ')[1], JWT_SECRET).id;
+    return jwt.verify(authHeader.split(' ')[1], JWT_SECRET).userId;
   } catch {
     return null;
   }
@@ -70,4 +70,3 @@ module.exports = async (req, res) => {
     return res.status(500).json({ message: 'Server error.' });
   }
 };
-
