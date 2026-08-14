@@ -45,11 +45,15 @@ module.exports = async (req, res) => {
       const { text } = req.body;
       if (!text?.trim()) return res.status(400).json({ message: 'Text required.' });
 
+      const user = await db.findUserById(userId);
+      if (!user.current_weight || !user.height) {
+        return res.status(400).json({ message: 'Complete your profile first.', needsOnboarding: true });
+      }
+
       const parsed = await parseNutritionText(text);
       await db.addNutritionLog(userId, parsed.type, parsed.value, text);
 
       const totals = await db.getTodayTotals(userId);
-      const user = await db.findUserById(userId);
       const calorieTarget = calculateBaselineCalories(user.current_weight, user.height);
       const waterTarget = calculateWaterTarget(user.current_weight);
 
@@ -62,8 +66,12 @@ module.exports = async (req, res) => {
     }
 
     if (action === 'status' && req.method === 'GET') {
-      const totals = await db.getTodayTotals(userId);
       const user = await db.findUserById(userId);
+      if (!user.current_weight || !user.height) {
+        return res.status(400).json({ message: 'Complete your profile first.', needsOnboarding: true });
+      }
+
+      const totals = await db.getTodayTotals(userId);
       const calorieTarget = calculateBaselineCalories(user.current_weight, user.height);
       const waterTarget = calculateWaterTarget(user.current_weight);
 
