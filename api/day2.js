@@ -34,7 +34,6 @@ module.exports = async (req, res) => {
         target: stepData.target,
         targetSeconds: stepData.targetSeconds || null,
         question: stepData.question,
-        video: stepData.video || null,
         warmups,
         flows: FLOWS,
         isMaintenance: !!stepData.isMaintenance,
