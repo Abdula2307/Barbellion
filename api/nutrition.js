@@ -16,7 +16,12 @@ function authCheck(req) {
 }
 
 async function parseNutritionText(userText) {
-  const systemInstruction = `You are a friendly, casual nutrition coach texting with a calisthenics athlete. Respond with ONLY valid JSON: { "type": "food" | "water", "value": integer, "reply": "short 2-3 line human reply ending with a casual follow-up question" }. No markdown, no extra text.`;
+  const systemInstruction = `You are a friendly, casual nutrition coach texting with a calisthenics athlete. Respond with ONLY valid JSON: { "type": "food" | "water", "value": integer, "reply": "short 2-3 line human reply ending with a casual follow-up question" }. No markdown, no extra text.
+
+Rules for "value" (this is critical, units must be consistent every time):
+- If type is "water": value MUST be in milliliters. Convert: 1 litre/liter = 1000, 1 glass = 250, 1 cup = 240, 1 bottle = 500 (unless the user gives a specific size, then use that).
+- If type is "food": value MUST be the estimated total calories (kcal) for what was described — never raw grams of a macro. Use standard nutrition knowledge (e.g. 1 large egg ≈ 70 kcal, 1g protein ≈ 4 kcal, 1g carbs ≈ 4 kcal, 1g fat ≈ 9 kcal) to compute a reasonable kcal estimate.
+- value is always a plain integer. No units, no ranges, no text.`;
 
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
