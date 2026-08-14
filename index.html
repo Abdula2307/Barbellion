@@ -64,6 +64,7 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     line-height: 1.6;
     overflow-x: hidden;
+    padding-top: 50px;
   }
 
   a { text-decoration: none; color: inherit; }
@@ -342,6 +343,75 @@
     font-size: 13px;
   }
 
+  /* LEARN / ARTICLES */
+  .learn {
+    padding: 80px 6% 40px;
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .article {
+    margin-bottom: 64px;
+  }
+
+  .article h2 {
+    font-size: clamp(22px, 3.4vw, 30px);
+    font-weight: 900;
+    margin-bottom: 18px;
+    letter-spacing: -0.5px;
+  }
+
+  .article h3 {
+    font-size: 17px;
+    font-weight: 800;
+    margin: 26px 0 10px;
+    color: var(--lime);
+  }
+
+  .article p {
+    color: var(--gray-light);
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+
+  .article ul {
+    color: var(--gray-light);
+    font-size: 15px;
+    margin: 0 0 16px 20px;
+  }
+
+  .article li { margin-bottom: 8px; }
+
+  /* GET STARTED / AUTH */
+  .get-started {
+    padding: 90px 6%;
+    text-align: center;
+    background-color: var(--card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .get-started h2 {
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 900;
+    margin-bottom: 12px;
+  }
+
+  .get-started p {
+    color: var(--gray);
+    font-size: 15px;
+    margin-bottom: 36px;
+  }
+
+  .auth-buttons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
   /* INSTALL SECTION */
   .download-section {
     padding: 80px 6%;
@@ -469,6 +539,20 @@
 </style>
 </head>
 <body>
+  <div style="position:fixed; top:0; left:0; right:0; height:50px; background:#0a0a0a; border-bottom:1px solid #1a1a1a; z-index:900; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+    <script>
+      atOptions = {
+        'key' : 'bd863b3293e070df6cb3d70b5f2d145e',
+        'format' : 'iframe',
+        'height' : 50,
+        'width' : 320,
+        'params' : {}
+      };
+    </script>
+    <script src="https://www.highperformanceformat.com/bd863b3293e070df6cb3d70b5f2d145e/invoke.js"></script>
+  </div>
+
+
 
   <nav>
     <div class="logo">BARBELLION</div>
@@ -478,8 +562,7 @@
       <a href="#install">Install App</a>
     </div>
     <div class="nav-auth">
-      <a href="auth.html" class="nav-login">Log In</a>
-      <a href="auth.html" class="nav-btn">Sign Up</a>
+      <a href="#learn" class="nav-login">Learn</a>
     </div>
   </nav>
 
@@ -489,12 +572,10 @@
     <p>Hypertrophy days, a real skill progression tree, and an AI nutrition coach that talks like a person — not a spreadsheet.</p>
 
     <div class="hero-buttons">
-      <button id="heroInstallBtn" class="btn-primary">
-        📲 Add to Home Screen
-      </button>
-      <a href="auth.html" class="btn-secondary">Open Web Version</a>
+      <button id="continueBtn" class="btn-primary">Continue</button>
+      <button id="heroInstallBtn" class="btn-secondary" hidden>📲 Add to Home Screen</button>
     </div>
-    <div class="hero-note">Free · No app store required · Instant Install</div>
+    <div class="hero-note">Free · Works installed or straight in your browser</div>
   </section>
 
   <section class="features" id="features">
@@ -558,6 +639,78 @@
     </div>
   </section>
 
+  <section class="learn" id="learn">
+
+    <div class="article">
+      <h2>Calisthenics vs Gym: Which Builds Strength Faster?</h2>
+      <p>It's one of the oldest debates in fitness, and the honest answer is: it depends what you mean by "strength." If your goal is a heavier one-rep max on a barbell squat or bench press, a gym with free weights is the faster, more direct route — external load lets you add resistance in tiny, precise increments week after week, which is exactly what pure powerlifting numbers reward. But if your goal is functional, whole-body strength — the kind that lets you move your own bodyweight through space with control — calisthenics usually gets you there faster, because every rep is also a stability, coordination, and mobility exercise at the same time.</p>
+      <p>Gym training isolates. A leg press works your legs while the rest of your body sits still in a machine. A pull-up, on the other hand, recruits your back, shoulders, core, and grip simultaneously, which is part of why calisthenics athletes often develop visible, functional muscle without ever touching a barbell. The tradeoff is progression: adding 2.5kg to a bar is trivial, but going from a regular push-up to a one-arm push-up requires an entirely different exercise, and most people don't know what that staircase of exercises actually looks like.</p>
+      <h3>Where calisthenics wins</h3>
+      <ul>
+        <li>Zero equipment required — you can train anywhere, which removes the single biggest barrier to consistency</li>
+        <li>Skills like the muscle-up or front lever build strength, coordination, and body control at once</li>
+        <li>Bodyweight training scales naturally with your own strength, so there's less risk of ego-lifting an injury</li>
+      </ul>
+      <h3>Where the gym wins</h3>
+      <ul>
+        <li>Precise, linear overload — you always know exactly how much heavier this week's lift is than last week's</li>
+        <li>Isolating a lagging muscle group is much simpler with machines and dumbbells</li>
+      </ul>
+      <p>In practice, the biggest predictor of results isn't which camp you pick — it's whether you're following a structured plan or just winging it. That's the actual gap calisthenics training tends to fall into: no gym has ever confused someone about what to lift next, but almost every calisthenics beginner eventually hits a wall not knowing what skill to train after their first pull-up. That's the specific problem a structured skill-progression app like Barbellion is built to solve — you're never guessing what session comes next.</p>
+      <p>There's also a durability argument worth mentioning. Bodyweight training tends to be easier on the joints over the long run because the resistance is naturally capped at whatever you weigh, whereas loaded gym lifts can keep climbing well past what your joints are ready to handle if progression isn't managed carefully. That doesn't make one approach objectively "safer" than the other — both cause injuries when programming is sloppy — but it does mean calisthenics rewards patience in a way that's harder to rush past, which is exactly why a clear, gated progression system matters so much more here than it might in a traditional weight room.</p>
+    </div>
+
+    <div class="article">
+      <h2>Beginner Calisthenics: Skills You Can Learn in 30 Days</h2>
+      <p>Thirty days isn't enough time to build a front lever or a full planche — those take months of tendon and connective tissue adaptation, no matter how motivated you are. But it's absolutely enough time to build the foundational strength and body awareness that everything else is built on, and to walk away with two or three genuinely new skills under your belt.</p>
+      <h3>Realistic 30-day targets for a true beginner</h3>
+      <ul>
+        <li><strong>Week 1:</strong> Build baseline volume — bodyweight squats, incline or knee push-ups, dead hangs on a bar for time. The goal here isn't a new skill, it's conditioning your joints and tendons for what's coming.</li>
+        <li><strong>Week 2:</strong> Full-range push-ups and your first assisted or negative pull-ups. Most beginners are shocked how quickly the negative pull-up (lowering slowly from the top) builds the strength for a real one.</li>
+        <li><strong>Week 3:</strong> Your first L-sit hold — even a 10-15 second hold on parallettes or the floor is a legitimate milestone, and it's the gateway skill to almost everything else in the "static hold" family, including the handstand and eventually the planche.</li>
+        <li><strong>Week 4:</strong> A full, dead-hang pull-up, plus your first wall-assisted handstand hold. Both are genuinely achievable for most healthy beginners inside a month with consistent training.</li>
+      </ul>
+      <p>The trap most beginners fall into is trying to train everything at once — pull-ups one day, handstands the next, planche progressions the day after — with no sense of order. Skills in calisthenics build on each other in a specific sequence: the L-sit underpins the handstand, the handstand underpins the planche, and dead hangs underpin the entire pulling chain up to the muscle-up and front lever. This is exactly the structure Barbellion's skill tree follows — instead of choosing randomly, the app walks you through a proven progression order, and once you've mastered a move, it automatically folds back in as a warmup for whatever comes next, so nothing you've built gets forgotten.</p>
+      <p>If you only take one thing from your first 30 days, make it this: consistency at a lower difficulty beats sporadic effort at a higher one, every time. Three focused 30-minute sessions a week for a month will outperform one exhausting two-hour session followed by two weeks off, and it's also far less likely to leave you injured, burned out, or too sore to show up for the next session.</p>
+    </div>
+
+    <div class="article">
+      <h2>Why Most People Fail at Calisthenics (And How to Fix It)</h2>
+      <p>Calisthenics has one of the highest early drop-off rates of any training style — not because it doesn't work, but because of how it's usually approached. Three failure patterns show up again and again.</p>
+      <h3>1. No clear next step</h3>
+      <p>A beginner can do 10 push-ups and 3 pull-ups. What comes after that? Most people genuinely don't know, so they just repeat the same reps week after week until boredom or a plateau kills their motivation. Progress stalls not because the body stopped adapting, but because the training stopped demanding anything new.</p>
+      <h3>2. Skipping the boring foundational work</h3>
+      <p>Everyone wants the muscle-up and the front lever. Almost nobody wants to spend three weeks holding dead hangs and tuck holds. But skipping ahead to advanced skills before your tendons and joints are ready is the single biggest cause of the wrist, elbow, and shoulder injuries that end people's calisthenics journey for good.</p>
+      <h3>3. Nutrition is treated as an afterthought</h3>
+      <p>Skill training, especially anything in the planche or front lever family, is extremely demanding on connective tissue and requires the fuel and recovery to back it up. Most beginners track workouts but never track food or water, then wonder why recovery is slow and progress has stalled.</p>
+      <h3>The fix</h3>
+      <p>Every one of these problems has the same root cause: a lack of structure. The fix isn't more motivation — motivation runs out. It's a system that removes the guesswork: a fixed order of skills to progress through, a warmup that automatically includes everything you've already earned, and nutrition tracking that doesn't require you to be a spreadsheet person. That's precisely the gap Barbellion's AI-driven progression tracking is built to close — it tells you exactly what today's session is, logs your food when you describe it in plain English, and only advances you to the next skill once you've actually proven the current one, so you're never guessing and never skipping steps you're not ready for.</p>
+    </div>
+
+    <div class="article">
+      <h2>How AI Is Changing the Way We Train Calisthenics</h2>
+      <p>Calisthenics coaching has traditionally been either extremely manual — a real coach watching your form and adjusting your program — or completely absent, with beginners left to piece together a plan from YouTube videos and forum threads. AI is starting to close that gap, and it's changing three things in particular.</p>
+      <h3>Personalized progression, without a personal trainer</h3>
+      <p>Instead of a static PDF program that assumes everyone progresses at the same rate, an AI-backed system can track what you've actually achieved — not just what week you're on — and adjust your next session accordingly. If you haven't locked in your L-sit yet, it doesn't push you into handstand training just because "that's what week 3 says."</p>
+      <h3>Nutrition tracking that doesn't feel like data entry</h3>
+      <p>Traditional calorie trackers require you to search a food database, match portion sizes, and log everything manually — friction that's the number one reason people quit tracking within two weeks. An AI nutrition coach that you can just talk to in plain English ("had two eggs and toast for breakfast") removes almost all of that friction, which is a genuinely new capability, not just a nicer interface on the same old process.</p>
+      <h3>A coach that never forgets what you've mastered</h3>
+      <p>Human coaches are great, but they're not with you every single session tracking exactly which skills you've locked in. An automated system can — meaning your warmup literally evolves as you do, folding in every mastered move so you're constantly reinforcing what you've built while training what's next.</p>
+      <p>This is still an early space, and most calisthenics apps haven't caught up to it yet — most are still glorified workout timers with a static exercise list. Barbellion was built specifically around this idea: a structured skill tree that only advances when you've proven a skill, a warmup that grows with you automatically, and an AI nutrition coach you talk to like a person instead of a database. It's a genuinely different approach to an old training style, not just a repackaged version of the same static programs.</p>
+      <p>None of this replaces the actual training — no app does the pull-ups for you, and there's no substitute for the thousands of reps a real skill like the front lever demands. What AI-driven structure changes is the decision-making layer around that training: what to do today, whether you're actually ready for the next progression, and whether your nutrition is supporting the recovery your joints and connective tissue need. Removing that decision fatigue is often the difference between someone training consistently for a year and someone quietly falling off after three unstructured weeks.</p>
+    </div>
+
+  </section>
+
+  <section class="get-started" id="get-started">
+    <h2>Ready to train with intent?</h2>
+    <p>Create your account or log back in — your progress picks up exactly where you left off.</p>
+    <div class="auth-buttons">
+      <a href="auth.html" class="btn-primary">Sign Up</a>
+      <a href="auth.html" class="btn-secondary">Log In</a>
+    </div>
+  </section>
+
   <section class="download-section" id="install">
     <div class="download-card">
       <div class="download-icon">🏋️</div>
@@ -576,8 +729,8 @@
 
       <div class="or-divider">OR</div>
 
-      <a href="auth.html" class="btn-secondary-link">
-        Open in Browser Directly
+      <a href="#get-started" class="btn-secondary-link">
+        Continue in Browser
       </a>
     </div>
   </section>
@@ -587,8 +740,8 @@
     <p>© 2026 Barbellion. Train with intent.</p>
     <div class="footer-links">
       <a href="#features">Features</a>
-      <a href="#how">How It Works</a>
-      <a href="auth.html">Log In</a>
+      <a href="#learn">Learn</a>
+      <a href="#get-started">Log In</a>
     </div>
   </footer>
 <script>
@@ -599,17 +752,24 @@
   let deferredPrompt = null;
   const heroBtn = document.getElementById('heroInstallBtn');
   const cardBtn = document.getElementById('cardInstallBtn');
+  const continueBtn = document.getElementById('continueBtn');
 
-  // Keep the install buttons hidden until the browser confirms that
-  // the native PWA install prompt is available.
+  // The install button only appears if the browser confirms the native
+  // PWA install prompt is available. If the site is already installed
+  // (running standalone) it stays hidden — installing again isn't possible.
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+
   heroBtn.hidden = true;
-  cardBtn.hidden = true;
+  cardBtn.hidden = isStandalone;
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    heroBtn.hidden = false;
-    cardBtn.hidden = false;
+    if (!isStandalone) {
+      heroBtn.hidden = false;
+      cardBtn.hidden = false;
+    }
   });
 
   async function triggerInstall() {
@@ -631,7 +791,14 @@
 
   heroBtn.addEventListener('click', triggerInstall);
   cardBtn.addEventListener('click', triggerInstall);
+
+  // Continue always does the same thing, installed or not: scroll straight
+  // down to the Log In / Sign Up section at the bottom of the page.
+  continueBtn.addEventListener('click', () => {
+    document.getElementById('get-started').scrollIntoView({ behavior: 'smooth' });
+  });
 </script>
 
+  <script src="https://pl30837275.effectivecpmnetwork.com/2e/b5/d8/2eb5d8f3699e91eddee6a3d6ddd5c526.js"></script>
 </body>
          </html>
