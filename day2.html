@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+       <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6,7 +6,7 @@
 <title>Barbellion — Day 2 Skills</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:#0a0a0a; color:#fff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:50px 20px; }
+  body { background:#0a0a0a; color:#fff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:50px 20px; padding-top:74px; }
   .title { font-size:26px; font-weight:900; text-align:center; margin-bottom:6px; }
   .subtitle { color:#999; font-size:13px; text-align:center; margin-bottom:16px; }
   .progress-row { display:flex; gap:5px; width:100%; max-width:500px; margin-bottom:24px; }
@@ -21,7 +21,7 @@
   .rest-label { color:#c6ff1a; font-size:15px; font-weight:800; letter-spacing:3px; margin-bottom:10px; }
   .rest-timer { font-size:60px; font-weight:900; margin-bottom:18px; }
   .rest-hint { color:#666; font-size:12px; }
-  .skill-timer-corner { position:fixed; top:16px; right:16px; background:#141414; border:1px solid #2a2a2a; border-radius:10px; padding:8px 14px; font-weight:900; font-size:18px; color:#c6ff1a; }
+  .skill-timer-corner { position:fixed; top:66px; right:16px; background:#141414; border:1px solid #2a2a2a; border-radius:10px; padding:8px 14px; font-weight:900; font-size:18px; color:#c6ff1a; }
   .flow-rep { color:#666; font-size:12px; letter-spacing:1px; margin-bottom:8px; }
   .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); align-items:center; justify-content:center; padding:24px; z-index:100; }
   .modal-overlay.show { display:flex; }
@@ -35,10 +35,24 @@
   .levelup-title { color:#c6ff1a; font-size:28px; font-weight:900; margin-bottom:16px; letter-spacing:1px; }
   .levelup-sub { color:#ccc; font-size:14px; line-height:21px; margin-bottom:24px; }
   .continue-btn { background:#c6ff1a; color:#0a0a0a; border:none; border-radius:12px; padding:15px 40px; font-weight:900; font-size:15px; cursor:pointer; }
-  .level-link { position:fixed; top:16px; left:16px; font-size:12px; color:#666; text-decoration:underline; cursor:pointer; }
+  .level-link { position:fixed; top:66px; left:16px; font-size:12px; color:#666; text-decoration:underline; cursor:pointer; }
 </style>
 </head>
 <body>
+  <div style="position:fixed; top:0; left:0; right:0; height:50px; background:#0a0a0a; border-bottom:1px solid #1a1a1a; z-index:900; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+    <script>
+      atOptions = {
+        'key' : 'bd863b3293e070df6cb3d70b5f2d145e',
+        'format' : 'iframe',
+        'height' : 50,
+        'width' : 320,
+        'params' : {}
+      };
+    </script>
+    <script src="https://www.highperformanceformat.com/bd863b3293e070df6cb3d70b5f2d145e/invoke.js"></script>
+  </div>
+
+
   <div class="level-link" onclick="window.location.href='dashboard.html'">← Dashboard</div>
   <div class="title">DAY 2 SKILLS</div>
   <div class="subtitle" id="subtitle"></div>
@@ -307,5 +321,6 @@
 
     init();
   </script>
+  <script src="https://pl30837275.effectivecpmnetwork.com/2e/b5/d8/2eb5d8f3699e91eddee6a3d6ddd5c526.js"></script>
 </body>
 </html>
