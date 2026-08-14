@@ -52,6 +52,9 @@
 
 
   <div class="brand">BARBELLION</div>
+  <div style="text-align:center; margin-top:-6px; margin-bottom:6px;">
+    <span onclick="logout()" style="color:#666; font-size:11px; text-decoration:underline; cursor:pointer;">Log Out</span>
+  </div>
   <div class="section-title">YOUR PROGRESS</div>
 
   <div class="rings">
@@ -188,6 +191,11 @@
       } catch {
         addChatMessage("Couldn't log that, try rephrasing.", false);
       }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = 'auth.html';
     }
 
     function openLevelModal() {
