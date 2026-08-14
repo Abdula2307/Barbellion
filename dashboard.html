@@ -120,9 +120,13 @@
     async function fetchStatus() {
       const res = await fetch(`${API_BASE}/nutrition?action=status`, { headers });
       const data = await res.json();
+      if (!res.ok || data.calorieTarget <= 0) {
+        window.location.href = 'onboarding.html';
+        return;
+      }
       document.getElementById('calValue').textContent = data.caloriesLeft;
       document.getElementById('calUnit').textContent = `/ ${data.calorieTarget} kcal`;
-      document.getElementById('waterValue').textContent = (data.waterTarget - data.waterLeft) / 1000 + 'L';
+      document.getElementById('waterValue').textContent = ((data.waterTarget - data.waterLeft) / 1000).toFixed(2) + ' L';
       document.getElementById('waterUnit').textContent = `/ ${(data.waterTarget/1000).toFixed(1)} L`;
       const eaten = data.calorieTarget - data.caloriesLeft;
       const calPct = data.calorieTarget > 0 ? Math.min(eaten / data.calorieTarget, 1) : 0;
@@ -141,7 +145,7 @@
       } else if (data.completedToday) {
         section.innerHTML = '<div class="rest-text">Today\'s workout is done. Come back tomorrow 💪</div>';
       } else {
-        section.innerHTML = `<button class="workout-btn" onclick="window.location.href='${data.day}.html'">START ${data.label.toUpperCase()}</button>`;
+        section.innerHTML = `<button class="workout-btn" onclick="window.location.href='${data.day}.html'">START DAY</button>`;
       }
     }
 
