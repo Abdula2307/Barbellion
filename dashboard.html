@@ -167,6 +167,10 @@
       fetchStatus();
     }
 
+    // Lives only in this browser tab for this session — never saved anywhere,
+    // so it costs nothing in the database and disappears when the page is closed/reloaded.
+    let chatHistory = [];
+
     function addChatMessage(text, isUser) {
       const list = document.getElementById('chatList');
       const row = document.createElement('div');
@@ -184,9 +188,17 @@
       input.value = '';
 
       try {
-        const res = await fetch(`${API_BASE}/nutrition?action=log`, { method: 'POST', headers, body: JSON.stringify({ text }) });
+        const res = await fetch(`${API_BASE}/nutrition?action=log`, {
+          method: 'POST', headers,
+          body: JSON.stringify({ text, history: chatHistory }),
+        });
         const data = await res.json();
         addChatMessage(data.reply, false);
+
+        chatHistory.push({ role: 'user', content: text });
+        chatHistory.push({ role: 'assistant', content: data.reply });
+        if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
+
         fetchStatus();
       } catch {
         addChatMessage("Couldn't log that, try rephrasing.", false);
