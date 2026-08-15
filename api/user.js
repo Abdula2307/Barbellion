@@ -43,9 +43,9 @@ module.exports = async (req, res) => {
 
   try {
     if (action === 'onboarding' && req.method === 'POST') {
-      const { current_weight, height } = req.body;
-      if (!current_weight || !height) return res.status(400).json({ message: 'Weight and height required.' });
-      await db.completeOnboarding(userId, current_weight, height);
+      const { current_weight, height, age } = req.body;
+      if (!current_weight || !height || !age) return res.status(400).json({ message: 'Weight, height, and age required.' });
+      await db.completeOnboarding(userId, current_weight, height, age);
       const user = await db.findUserById(userId);
       return res.json({ message: 'Onboarding complete.', user: sanitize(user) });
     }
