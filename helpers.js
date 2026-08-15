@@ -1,12 +1,33 @@
-// ---- Calorie calc ----
-function calculateBaselineCalories(weightKg, heightCm) {
-  const age = 25;
-  const bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
-  return Math.round(bmr * 1.55);
+// ---- Calorie / water calc ----
+function getBMICategory(weightKg, heightCm) {
+  if (!weightKg || !heightCm) return 'normal';
+  const heightM = heightCm / 100;
+  const bmi = weightKg / (heightM * heightM);
+  if (bmi < 18.5) return 'underweight';
+  if (bmi >= 25) return 'overweight';
+  return 'normal';
 }
 
-function calculateWaterTarget(weightKg) {
-  return Math.round(weightKg * 35 + 500);
+function calculateBaselineCalories(weightKg, heightCm, age) {
+  const userAge = age || 25;
+  const bmr = 10 * weightKg + 6.25 * heightCm - 5 * userAge + 5;
+  let calories = Math.round(bmr * 1.55);
+
+  const category = getBMICategory(weightKg, heightCm);
+  if (category === 'underweight') calories += 450; // surplus to help gain weight
+  if (category === 'overweight') calories -= 450;   // deficit to help lose weight
+
+  return calories;
+}
+
+function calculateWaterTarget(weightKg, heightCm) {
+  let target = Math.round(weightKg * 35 + 500);
+
+  const category = getBMICategory(weightKg, heightCm);
+  if (category === 'underweight') target += 550; // extra water to support the calorie surplus
+  // overweight: target left unchanged — cutting water isn't a safe/healthy lever
+
+  return target;
 }
 
 // ---- Skill tree (Day 2) — single unified track, 16 levels ----
@@ -115,6 +136,7 @@ function advanceStep(current, passed) {
 module.exports = {
   calculateBaselineCalories,
   calculateWaterTarget,
+  getBMICategory,
   getStepData,
   getWarmupBlocks,
   advanceStep,
