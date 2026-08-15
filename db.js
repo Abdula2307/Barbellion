@@ -13,12 +13,16 @@ async function connectDB() {
 }
 
 const UserSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true },
   country: { type: String, default: '' },
   onboarded: { type: Boolean, default: false },
+  verified: { type: Boolean, default: false },
+  verificationToken: { type: String, default: null },
+  verificationTokenExpires: { type: Date, default: null },
   current_weight: { type: Number, default: null },
   height: { type: Number, default: null },
+  age: { type: Number, default: null },
   current_skill_step: { type: Number, default: 1 },
   last_weight_check: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now },
@@ -51,18 +55,46 @@ function startOfToday() {
 
 module.exports = {
   // ---- Auth ----
-  async findUserByUsername(username) {
+  async findUserByEmail(email) {
     await connectDB();
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) return null;
-    return { id: user._id, username: user.username, password: user.password, onboarded: user.onboarded };
+    return {
+      id: user._id,
+      email: user.email,
+      password: user.password,
+      onboarded: user.onboarded,
+      verified: user.verified,
+    };
   },
 
-  async createUser(username, password, country) {
+  async createUser(email, password, country, verificationToken, verificationTokenExpires) {
     await connectDB();
-    const newUser = new User({ username, password, country });
+    const newUser = new User({
+      email: email.toLowerCase().trim(),
+      password,
+      country,
+      verificationToken,
+      verificationTokenExpires,
+    });
     await newUser.save();
-    return { id: newUser._id, username: newUser.username, onboarded: newUser.onboarded };
+    return { id: newUser._id, email: newUser.email, onboarded: newUser.onboarded };
+  },
+
+  async verifyUserByToken(token) {
+    await connectDB();
+    const user = await User.findOne({
+      verificationToken: token,
+      verificationTokenExpires: { $gt: new Date() },
+    });
+    if (!user) return null;
+
+    user.verified = true;
+    user.verificationToken = null;
+    user.verificationTokenExpires = null;
+    await user.save();
+
+    return { id: user._id, email: user.email, onboarded: user.onboarded };
   },
 
   // ---- User ----
@@ -72,22 +104,25 @@ module.exports = {
     if (!user) return null;
     return {
       id: user._id,
-      username: user.username,
+      email: user.email,
       country: user.country,
       onboarded: user.onboarded,
+      verified: user.verified,
       current_weight: user.current_weight,
       height: user.height,
+      age: user.age,
       current_skill_step: user.current_skill_step,
       last_weight_check: user.last_weight_check,
       password: user.password,
     };
   },
 
-  async completeOnboarding(userId, current_weight, height) {
+  async completeOnboarding(userId, current_weight, height, age) {
     await connectDB();
     await User.findByIdAndUpdate(userId, {
       current_weight,
       height,
+      age,
       onboarded: true,
       last_weight_check: new Date(),
     });
@@ -134,4 +169,3 @@ module.exports = {
     return totals;
   },
 };
-
