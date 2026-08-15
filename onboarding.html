@@ -42,6 +42,9 @@
     <label>CURRENT HEIGHT (CM)</label>
     <input type="number" id="height" placeholder="175">
 
+    <label>AGE</label>
+    <input type="number" id="age" placeholder="25">
+
     <button class="submit" id="submitBtn" onclick="handleSubmit()">CONTINUE</button>
     <div class="error" id="errorMsg"></div>
   </div>
@@ -54,11 +57,12 @@
     async function handleSubmit() {
       const weight = parseInt(document.getElementById('weight').value, 10);
       const height = parseInt(document.getElementById('height').value, 10);
+      const age = parseInt(document.getElementById('age').value, 10);
       const errorEl = document.getElementById('errorMsg');
       const btn = document.getElementById('submitBtn');
 
-      if (!weight || !height) {
-        errorEl.textContent = 'Fill in weight and height.';
+      if (!weight || !height || !age) {
+        errorEl.textContent = 'Fill in weight, height, and age.';
         errorEl.style.display = 'block';
         return;
       }
@@ -70,7 +74,7 @@
         const res = await fetch(`${API_BASE}/user?action=onboarding`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ current_weight: weight, height }),
+          body: JSON.stringify({ current_weight: weight, height, age }),
         });
         if (!res.ok) throw new Error();
         window.location.href = 'dashboard.html';
