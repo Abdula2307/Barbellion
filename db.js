@@ -13,13 +13,10 @@ async function connectDB() {
 }
 
 const UserSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  username: { type: String, required: true, unique: true, trim: true },
   password: { type: String, required: true },
   country: { type: String, default: '' },
   onboarded: { type: Boolean, default: false },
-  verified: { type: Boolean, default: false },
-  verificationToken: { type: String, default: null },
-  verificationTokenExpires: { type: Date, default: null },
   current_weight: { type: Number, default: null },
   height: { type: Number, default: null },
   age: { type: Number, default: null },
@@ -55,46 +52,18 @@ function startOfToday() {
 
 module.exports = {
   // ---- Auth ----
-  async findUserByEmail(email) {
+  async findUserByUsername(username) {
     await connectDB();
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const user = await User.findOne({ username: username.trim() });
     if (!user) return null;
-    return {
-      id: user._id,
-      email: user.email,
-      password: user.password,
-      onboarded: user.onboarded,
-      verified: user.verified,
-    };
+    return { id: user._id, username: user.username, password: user.password, onboarded: user.onboarded };
   },
 
-  async createUser(email, password, country, verificationToken, verificationTokenExpires) {
+  async createUser(username, password, country) {
     await connectDB();
-    const newUser = new User({
-      email: email.toLowerCase().trim(),
-      password,
-      country,
-      verificationToken,
-      verificationTokenExpires,
-    });
+    const newUser = new User({ username: username.trim(), password, country });
     await newUser.save();
-    return { id: newUser._id, email: newUser.email, onboarded: newUser.onboarded };
-  },
-
-  async verifyUserByToken(token) {
-    await connectDB();
-    const user = await User.findOne({
-      verificationToken: token,
-      verificationTokenExpires: { $gt: new Date() },
-    });
-    if (!user) return null;
-
-    user.verified = true;
-    user.verificationToken = null;
-    user.verificationTokenExpires = null;
-    await user.save();
-
-    return { id: user._id, email: user.email, onboarded: user.onboarded };
+    return { id: newUser._id, username: newUser.username, onboarded: newUser.onboarded };
   },
 
   // ---- User ----
@@ -104,10 +73,9 @@ module.exports = {
     if (!user) return null;
     return {
       id: user._id,
-      email: user.email,
+      username: user.username,
       country: user.country,
       onboarded: user.onboarded,
-      verified: user.verified,
       current_weight: user.current_weight,
       height: user.height,
       age: user.age,
