@@ -2,8 +2,9 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+
 module.exports = async function handler(req, res) {
-  // Allow only POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
@@ -17,20 +18,17 @@ module.exports = async function handler(req, res) {
 
   try {
     if (action === 'signup') {
-      // Check if user already exists
       const existingUser = await db.findUserByUsername(username);
       if (existingUser) {
         return res.status(400).json({ message: 'Username already taken.' });
       }
 
-      // Hash password and save user
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = await db.createUser(username, hashedPassword, country || '');
 
-      // Sign JWT valid for 30 days
       const token = jwt.sign(
         { userId: newUser.id, username: newUser.username },
-        process.env.JWT_SECRET,
+        JWT_SECRET,
         { expiresIn: '30d' }
       );
 
@@ -41,22 +39,19 @@ module.exports = async function handler(req, res) {
       });
 
     } else if (action === 'login') {
-      // Find user
       const user = await db.findUserByUsername(username);
       if (!user) {
         return res.status(401).json({ message: 'Invalid username or password.' });
       }
 
-      // Compare password
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.status(401).json({ message: 'Invalid username or password.' });
       }
 
-      // Sign JWT valid for 30 days
       const token = jwt.sign(
         { userId: user.id, username: user.username },
-        process.env.JWT_SECRET,
+        JWT_SECRET,
         { expiresIn: '30d' }
       );
 
